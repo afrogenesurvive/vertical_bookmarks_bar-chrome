@@ -11,8 +11,13 @@
 
   // ─── State ───────────────────────────────────────────────────────────────
   let isDrawerOpen = false;
-  let activeSubDrawer = null; // current open sub-drawer element
+  let subDrawerStack = []; // stack of open sub-drawers (innermost last)
   let isLoading = false;
+  let settings = {
+    barPosition: "right",
+    theme: "dark",
+    showTitle: false,
+  };
 
   // ─── Favicon helper ──────────────────────────────────────────────────────
   function getFaviconUrls(url) {
@@ -45,7 +50,6 @@
   toggle.id = "vbb-toggle";
   toggle.setAttribute("aria-label", "Toggle bookmarks");
   toggle.title = "Bookmarks";
-  toggle.textContent = "★"; // Unicode fallback in case Font Awesome fails
   const toggleIcon = document.createElement("i");
   toggleIcon.className = "fa-solid fa-bookmark";
   toggle.prepend(toggleIcon);
@@ -60,6 +64,26 @@
   itemsContainer.id = "vbb-items";
   itemsContainer.className = "vbb-items";
 
+  // Drawer header with bookmarks title and settings gear
+  const drawerHeader = document.createElement("div");
+  drawerHeader.className = "vbb-drawer-header";
+
+  const headerTitle = document.createElement("span");
+  headerTitle.className = "vbb-header-title";
+  headerTitle.innerHTML = '<i class="fa-solid fa-bookmark"></i> Bookmarks';
+  drawerHeader.appendChild(headerTitle);
+
+  const settingsBtn = document.createElement("button");
+  settingsBtn.className = "vbb-settings-btn";
+  settingsBtn.title = "Settings";
+  settingsBtn.innerHTML = '<i class="fa-solid fa-gear"></i>';
+  settingsBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    openSettingsPanel();
+  });
+  drawerHeader.appendChild(settingsBtn);
+
+  drawer.appendChild(drawerHeader);
   drawer.appendChild(itemsContainer);
   container.appendChild(toggle);
   container.appendChild(drawer);
@@ -116,7 +140,7 @@
     isDrawerOpen = false;
     drawer.classList.remove("open");
     toggle.classList.remove("active");
-    closeSubDrawer();
+    closeAllSubDrawers();
   }
 
   // ─── Load & render bookmarks ─────────────────────────────────────────────
@@ -182,6 +206,7 @@
         label.className = "vbb-item-label";
         label.textContent = item.title || new URL(item.url).hostname;
         el.appendChild(label);
+        el.title = label.textContent;
 
         el.addEventListener("click", (e) => {
           e.stopPropagation();
@@ -200,6 +225,7 @@
         label.className = "vbb-item-label";
         label.textContent = item.title || "Folder";
         el.appendChild(label);
+        el.title = label.textContent;
 
         if (item.children && item.children.length > 0) {
           // Already have cached children – render immediately
@@ -218,9 +244,10 @@
   function setupFolderClick(folderEl, folderId, cachedChildren) {
     folderEl.addEventListener("click", (e) => {
       e.stopPropagation();
-      // If this folder's sub-drawer is already open, close it
-      if (activeSubDrawer && activeSubDrawer.dataset.folderId === folderId) {
-        closeSubDrawer();
+      // Toggle: if this folder already has a sub-drawer anywhere in the stack, close from there
+      const existingIdx = subDrawerStack.findIndex((sd) => sd.dataset.folderId === folderId);
+      if (existingIdx !== -1) {
+        closeSubDrawersFrom(existingIdx);
         return;
       }
       showSubDrawer(folderEl, folderId, cachedChildren);
@@ -228,7 +255,19 @@
   }
 
   function showSubDrawer(folderEl, folderId, cachedChildren) {
-    closeSubDrawer();
+    // Find the parent container (main drawer or a sub-drawer) that holds this folder
+    const parentContainer = folderEl.closest(".vbb-drawer, .vbb-sub-drawer");
+
+    // Close sub-drawers at this depth or deeper
+    if (parentContainer && parentContainer.classList.contains("vbb-sub-drawer")) {
+      const parentIdx = subDrawerStack.indexOf(parentContainer);
+      if (parentIdx !== -1) {
+        closeSubDrawersFrom(parentIdx + 1);
+      }
+    } else {
+      // Parent is the main drawer — close all sub-drawers
+      closeSubDrawersFrom(0);
+    }
 
     // Highlight this folder
     folderEl.classList.add("vbb-folder-open");
@@ -238,26 +277,35 @@
     subDrawer.dataset.folderId = folderId;
     subDrawer.id = `vbb-sub-${folderId}`;
 
-    // Position sub-drawer to the LEFT of the main drawer
-    const drawerRect = drawer.getBoundingClientRect();
+    // Position sub-drawer to the side of its parent container based on bar position
+    const parentRect = parentContainer.getBoundingClientRect();
     const folderRect = folderEl.getBoundingClientRect();
 
-    const subWidth = 38;
-    const subLeft = drawerRect.left - 4 - subWidth;
+    const subWidth = 42;
+    const gap = 4;
+    let subLeft;
+    if (settings.barPosition === "right") {
+      // Bar on the right — sub-drawer opens to the left
+      subLeft = parentRect.left - gap - subWidth;
+    } else {
+      // Bar on the left — sub-drawer opens to the right
+      subLeft = parentRect.right + gap;
+    }
+
+    // Height based on content, capped to viewport
     const subTop = folderRect.top;
-    const maxBottom = Math.min(drawerRect.bottom, window.innerHeight - 8);
-    const subHeight = Math.max(36, maxBottom - subTop);
+    const viewportBottom = window.innerHeight - 8;
+    const subMaxHeight = Math.max(36, viewportBottom - subTop);
 
     subDrawer.style.left = subLeft + "px";
     subDrawer.style.top = subTop + "px";
-    subDrawer.style.height = subHeight + "px";
-    subDrawer.style.maxHeight = subHeight + "px";
+    subDrawer.style.maxHeight = subMaxHeight + "px";
 
     document.body.appendChild(subDrawer);
     // Force reflow then add open class for transition
     void subDrawer.offsetWidth;
     subDrawer.classList.add("open");
-    activeSubDrawer = subDrawer;
+    subDrawerStack.push(subDrawer);
 
     // Load & render contents
     if (cachedChildren) {
@@ -276,32 +324,133 @@
         }
       });
     }
-
-    // Close sub-drawer when clicking elsewhere
-    const closeHandler = (e) => {
-      if (!subDrawer.contains(e.target) && !folderEl.contains(e.target)) {
-        closeSubDrawer();
-        document.removeEventListener("click", closeHandler);
-      }
-    };
-    // Delay adding the listener so the current click doesn't immediately close it
-    setTimeout(() => {
-      document.addEventListener("click", closeHandler);
-    }, 0);
   }
 
-  function closeSubDrawer() {
-    // Remove highlight from all folders
-    document.querySelectorAll(".vbb-folder.vbb-folder-open").forEach((el) => {
-      el.classList.remove("vbb-folder-open");
-    });
-    if (activeSubDrawer) {
-      const el = activeSubDrawer;
-      activeSubDrawer = null;
-      el.classList.remove("open");
-      setTimeout(() => {
-        el.remove();
-      }, 150);
+  function closeSubDrawersFrom(index) {
+    while (subDrawerStack.length > index) {
+      const sd = subDrawerStack.pop();
+      // Un-highlight the folder that owns this sub-drawer
+      const folderId = sd.dataset.folderId;
+      const folderEl = document.querySelector(`.vbb-item[data-id="${CSS.escape(folderId)}"]`);
+      if (folderEl) {
+        folderEl.classList.remove("vbb-folder-open");
+      }
+      sd.classList.remove("open");
+      setTimeout(() => sd.remove(), 150);
     }
+  }
+
+  function closeAllSubDrawers() {
+    closeSubDrawersFrom(0);
+  }
+
+  function applyBarPosition() {
+    container.classList.toggle("vbb-left", settings.barPosition === "left");
+    container.classList.toggle("vbb-right", settings.barPosition === "right");
+    closeAllSubDrawers();
+  }
+
+  function applyTheme() {
+    container.classList.toggle("vbb-light", settings.theme === "light");
+    container.classList.toggle("vbb-dark", settings.theme === "dark");
+  }
+
+  function applyShowTitle() {
+    container.classList.toggle("vbb-show-titles", settings.showTitle);
+  }
+
+  function openSettingsPanel() {
+    closeAllSubDrawers();
+
+    const panel = document.createElement("div");
+    panel.className = "vbb-sub-drawer vbb-settings-drawer";
+    panel.dataset.folderId = "__settings__";
+
+    // Position to the side of the main drawer
+    const drawerRect = drawer.getBoundingClientRect();
+
+    const panelWidth = 42;
+    const gap = 4;
+    let panelLeft;
+    if (settings.barPosition === "right") {
+      panelLeft = drawerRect.left - gap - panelWidth;
+    } else {
+      panelLeft = drawerRect.right + gap;
+    }
+
+    panel.style.left = panelLeft + "px";
+    panel.style.top = drawerRect.top + "px";
+    panel.style.maxHeight = Math.min(drawerRect.height, window.innerHeight - 16) + "px";
+
+    document.body.appendChild(panel);
+    void panel.offsetWidth;
+    panel.classList.add("open");
+    subDrawerStack.push(panel);
+
+    renderSettings(panel);
+  }
+
+  function renderSettings(container) {
+    container.innerHTML = "";
+
+    // Bar position
+    const posItem = document.createElement("div");
+    posItem.className = "vbb-item vbb-settings-item";
+    posItem.innerHTML =
+      '<span class="vbb-settings-icon"><i class="fa-solid fa-arrows-left-right"></i></span>' +
+      '<span class="vbb-settings-label">Bar position</span>' +
+      '<span class="vbb-settings-value">' +
+      (settings.barPosition === "right" ? "Right" : "Left") +
+      "</span>";
+    posItem.addEventListener("click", (e) => {
+      e.stopPropagation();
+      settings.barPosition = settings.barPosition === "right" ? "left" : "right";
+      applyBarPosition();
+      renderSettings(container);
+      // Reposition the settings panel to the new side
+      const drawerRect = drawer.getBoundingClientRect();
+      const panelWidth = 42;
+      const gap = 4;
+      if (settings.barPosition === "right") {
+        panel.style.left = drawerRect.left - gap - panelWidth + "px";
+      } else {
+        panel.style.left = drawerRect.right + gap + "px";
+      }
+    });
+    container.appendChild(posItem);
+
+    // Theme
+    const themeItem = document.createElement("div");
+    themeItem.className = "vbb-item vbb-settings-item";
+    themeItem.innerHTML =
+      '<span class="vbb-settings-icon"><i class="fa-solid fa-palette"></i></span>' +
+      '<span class="vbb-settings-label">Theme</span>' +
+      '<span class="vbb-settings-value">' +
+      (settings.theme === "dark" ? "Dark" : "Light") +
+      "</span>";
+    themeItem.addEventListener("click", (e) => {
+      e.stopPropagation();
+      settings.theme = settings.theme === "dark" ? "light" : "dark";
+      applyTheme();
+      renderSettings(container);
+    });
+    container.appendChild(themeItem);
+
+    // Show titles
+    const titleItem = document.createElement("div");
+    titleItem.className = "vbb-item vbb-settings-item";
+    titleItem.innerHTML =
+      '<span class="vbb-settings-icon"><i class="fa-solid fa-font"></i></span>' +
+      '<span class="vbb-settings-label">Show titles</span>' +
+      '<span class="vbb-settings-value">' +
+      (settings.showTitle ? "On" : "Off") +
+      "</span>";
+    titleItem.addEventListener("click", (e) => {
+      e.stopPropagation();
+      settings.showTitle = !settings.showTitle;
+      applyShowTitle();
+      renderSettings(container);
+    });
+    container.appendChild(titleItem);
   }
 })();
