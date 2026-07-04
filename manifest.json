@@ -3,7 +3,7 @@
   "name": "Vertical Bookmarks Bar",
   "version": "1.0.0",
   "description": "A floating vertical bookmarks bar with icon-only items and folder navigation.",
-  "permissions": ["bookmarks", "favicon", "activeTab", "scripting"],
+  "permissions": ["bookmarks", "favicon", "activeTab", "scripting", "storage"],
   "background": {
     "service_worker": "src/background.js"
   },
