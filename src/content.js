@@ -452,18 +452,20 @@
       } else {
         panel.style.bottom = window.innerHeight - drawerRect.top + gap + "px";
       }
-      panel.style.right = drawerRect.left + 50 + "px";
-      panel.style.maxHeight = Math.min(300, window.innerHeight - 16) + "px";
+      panel.style.right = drawerRect.left + 20 + "px";
     } else {
       // Settings opens to the side
       if (settings.barPosition === "right") {
-        panel.style.left = drawerRect.left - gap - panelWidth + "px";
+        panel.style.left = drawerRect.left - panelWidth - gap + "px";
       } else {
         panel.style.left = drawerRect.right + gap + "px";
       }
       panel.style.top = drawerRect.top + "px";
-      panel.style.maxHeight = Math.min(drawerRect.height, window.innerHeight - 16) + "px";
     }
+
+    // Same max-height for both modes so settings content fits regardless of bar height
+    // panel.style.maxHeight = Math.min(600, window.innerHeight - 60) + "px";
+    panel.style.height = "fit-content";
 
     container.appendChild(panel);
     void panel.offsetWidth;
