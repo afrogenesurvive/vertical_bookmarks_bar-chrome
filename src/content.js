@@ -452,7 +452,7 @@
       } else {
         panel.style.bottom = window.innerHeight - drawerRect.top + gap + "px";
       }
-      panel.style.right = drawerRect.left + 20 + "px";
+      panel.style.right = drawerRect.left + 40 + "px";
     } else {
       // Settings opens to the side
       if (settings.barPosition === "right") {
