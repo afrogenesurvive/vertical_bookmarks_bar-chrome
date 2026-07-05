@@ -143,15 +143,30 @@
 /* Vertical mode (left/right): items stack top-to-bottom */
 #vbb-container.vbb-vertical .vbb-drawer {
   flex-direction: column;
-  height: calc(100vh - 80px);
+  top: calc(6vh);
+  height: calc(95vh);
   width: 40px;
+}
+
+/* Vertical mode: header sticks to the top of the viewport */
+#vbb-container.vbb-vertical .vbb-drawer-header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #18181b;
+  border-radius: 10px 10px 0 0;
+}
+
+/* Vertical mode: adjust items top padding for toggle overlap */
+#vbb-container.vbb-vertical .vbb-items {
+  padding-top: 0;
 }
 
 /* ─── Horizontal mode: full-width bar (top/bottom) ───────────── */
 /* Compact ~40px tall bar. Items flow right & wrap; drawer scrolls vertically. */
 #vbb-container.vbb-horizontal .vbb-drawer {
   flex-direction: row;
-  width: calc(100vw - 80px);
+  width: calc(95vw);
   height: 40px;
   /* overflow-y: auto;
   overflow-x: hidden; */
@@ -159,23 +174,24 @@
 
 #vbb-container.vbb-horizontal.vbb-top .vbb-drawer {
   top: 8px;
-  right: calc(3.5vw);
+  right: calc(5vw);
 }
 #vbb-container.vbb-horizontal.vbb-bottom .vbb-drawer {
   bottom: 8px;
-  right: calc(4vw);
+  right: calc(5vw);
 }
 
-/* ─── Horizontal drawer header: compact row at the start ──────── */
+/* ─── Horizontal drawer header: compact row at the right ──────── */
 #vbb-container.vbb-horizontal .vbb-drawer-header {
   flex-direction: row;
   align-items: center;
   border-bottom: none;
-  border-right: 1px solid var(--vbb-border, #27272a);
+  border-left: 1px solid var(--vbb-border, #27272a);
   padding: 2px 6px;
   gap: 4px;
   flex-shrink: 0;
   align-self: stretch;
+  order: 1;
 }
 
 #vbb-container.vbb-horizontal .vbb-header-title {
@@ -225,10 +241,15 @@
 /* ─── Items container (scrollable) ──────────────────────────────── */
 .vbb-items {
   flex: 1;
-  overflow-y: auto;
   padding: 4px 0;
   scrollbar-width: thin;
   scrollbar-color: #3f3f46 transparent;
+}
+
+/* Vertical bars: scroll vertically only */
+#vbb-container.vbb-vertical .vbb-items {
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .vbb-items::-webkit-scrollbar {
@@ -245,14 +266,14 @@
   border-radius: 4px;
 }
 
-/* ─── Horizontal items: flow right, wrap to new rows, vertical scroll ── */
+/* ─── Horizontal items: single row, horizontal scroll only ── */
 #vbb-container.vbb-horizontal .vbb-items {
   display: flex;
   flex-direction: row;
-  flex-wrap: wrap;
-  align-content: flex-start;
-  overflow-y: auto;
-  overflow-x: hidden;
+  flex-wrap: nowrap;
+  align-items: center;
+  overflow-x: auto;
+  overflow-y: hidden;
   padding: 2px 4px;
   gap: 2px;
   flex: 1;
@@ -397,6 +418,36 @@
 /* ─── Folder sub-drawer: same size as main drawer items ────────── */
 .vbb-folder-drawer {
   width: 42px;
+}
+
+/* ─── Horizontal sub-drawer: items in a row, horizontal scroll ── */
+.vbb-sub-drawer.vbb-sub-drawer-horizontal {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  height: 40px;
+  width: auto;
+  min-width: 40px;
+  max-width: min(320px, calc(100vw - 80px));
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 2px 4px;
+  gap: 2px;
+}
+
+.vbb-sub-drawer.vbb-sub-drawer-horizontal .vbb-item {
+  width: auto;
+  height: 34px;
+  padding: 0 4px;
+  flex-shrink: 0;
+}
+
+/* Sub-drawer items label in horizontal mode: show below */
+.vbb-sub-drawer.vbb-sub-drawer-horizontal .vbb-item-label {
+  left: 50%;
+  top: 100%;
+  transform: translateX(-50%) translateY(4px);
 }
 
 /* ─── Folder icon fallback when Font Awesome is blocked ─────────── */

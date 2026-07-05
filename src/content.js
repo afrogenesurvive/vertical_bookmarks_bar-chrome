@@ -274,14 +274,17 @@
         el.appendChild(label);
         el.title = label.textContent;
 
-        // Click to toggle sub-drawer
+        // Click to toggle sub-drawer — only this folder's drawer
         el.addEventListener("click", (e) => {
           e.stopPropagation();
 
           const isOpen = el.classList.contains("vbb-folder-open");
           if (isOpen) {
-            // Close this folder's sub-drawer
-            closeAllSubDrawers();
+            // Close ONLY this folder's sub-drawer (and any nested)
+            const sdIndex = subDrawerStack.findIndex((sd) => sd.dataset.folderId === item.id);
+            if (sdIndex >= 0) {
+              closeSubDrawersFrom(sdIndex);
+            }
           } else {
             // Open a sub-drawer for this folder
             openFolderSubDrawer(el, item);
@@ -319,7 +322,8 @@
     const gap = 4;
 
     if (isHorizontal()) {
-      // ── Horizontal bar (top/bottom): sub-drawer below or above the item ──
+      // ── Horizontal bar (top/bottom): horizontal sub-drawer strip ──
+      subDrawer.classList.add("vbb-sub-drawer-horizontal");
       if (settings.barPosition === "top") {
         subDrawer.style.top = folderRect.bottom + gap + "px";
         subDrawer.style.bottom = "auto";
@@ -328,7 +332,8 @@
         subDrawer.style.top = "auto";
       }
       subDrawer.style.left = folderRect.left + "px";
-      subDrawer.style.maxHeight = Math.min(350, window.innerHeight - 16) + "px";
+      // Remove default fixed width so horizontal class applies properly
+      subDrawer.style.width = "";
     } else {
       // ── Vertical bar (left/right): sub-drawer to the side ──
       if (settings.barPosition === "right") {
@@ -337,7 +342,12 @@
         subDrawer.style.left = folderRect.right + gap + "px";
       }
       subDrawer.style.top = folderRect.top + "px";
-      subDrawer.style.maxHeight = Math.min(window.innerHeight - folderRect.top - 8, window.innerHeight - 16) + "px";
+      subDrawer.style.maxHeight = window.innerHeight - folderRect.top - 10 + "px";
+    }
+
+    // Horizontal sub-drawer width: from its left edge to 10px from the left viewport edge
+    if (isHorizontal()) {
+      subDrawer.style.maxWidth = folderRect.left - 10 + "px";
     }
 
     document.body.appendChild(subDrawer);
