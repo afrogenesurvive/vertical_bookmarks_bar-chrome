@@ -325,30 +325,36 @@
       // ── Horizontal bar (top/bottom): horizontal sub-drawer strip ──
       subDrawer.classList.add("vbb-sub-drawer-horizontal");
       if (settings.barPosition === "top") {
+        subDrawer.classList.add("vbb-sub-drawer-top");
         subDrawer.style.top = folderRect.bottom + gap + "px";
         subDrawer.style.bottom = "auto";
       } else {
+        subDrawer.classList.add("vbb-sub-drawer-bottom");
         subDrawer.style.bottom = window.innerHeight - folderRect.top + gap + "px";
         subDrawer.style.top = "auto";
       }
-      subDrawer.style.left = folderRect.left + "px";
+      // Anchor right edge left of the folder to create a gap between them
+      subDrawer.style.right = window.innerWidth - folderRect.left + gap + "px";
+      subDrawer.style.left = "auto";
       // Remove default fixed width so horizontal class applies properly
       subDrawer.style.width = "";
     } else {
       // ── Vertical bar (left/right): sub-drawer to the side ──
       if (settings.barPosition === "right") {
+        subDrawer.classList.add("vbb-sub-drawer-right");
         subDrawer.style.left = folderRect.left - gap - 42 + "px";
       } else {
+        subDrawer.classList.add("vbb-sub-drawer-left");
         subDrawer.style.left = folderRect.right + gap + "px";
       }
       subDrawer.style.top = folderRect.top + "px";
-      subDrawer.style.maxHeight = window.innerHeight - folderRect.top - 10 + "px";
+      subDrawer.style.maxHeight = window.innerHeight - folderRect.top - 20 + "px";
     }
 
-    // Horizontal sub-drawer width: from its left edge to 10px from the left viewport edge
+    // Cap horizontal sub-drawer width so it stops 60px from the left viewport edge
     if (isHorizontal()) {
-      // subDrawer.style.maxWidth = folderRect.left - 10 + "px";
-      subDrawer.style.maxWidth = window.innerWidth - folderRect.left - 10 + "px";
+      subDrawer.style.maxWidth = Math.max(40, folderRect.left - 20) + "px";
+      // subDrawer.style.maxWidth = window.innerWidth - folderRect.right - 20 + "px";
     }
 
     document.body.appendChild(subDrawer);

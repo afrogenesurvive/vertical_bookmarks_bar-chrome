@@ -439,10 +439,10 @@
   width: 42px;
 }
 
-/* ─── Horizontal sub-drawer: items in a row, horizontal scroll ── */
-.vbb-sub-drawer.vbb-sub-drawer-horizontal {
+/* ─── Top bar sub-drawer: items in a row, horizontal scroll ── */
+.vbb-sub-drawer.vbb-sub-drawer-top {
   display: flex;
-  flex-direction: row;
+  flex-direction: row-reverse;
   flex-wrap: nowrap;
   align-items: center;
   height: 40px;
@@ -455,22 +455,91 @@
   gap: 2px;
 }
 
-.vbb-sub-drawer.vbb-sub-drawer-horizontal .vbb-item {
+.vbb-sub-drawer.vbb-sub-drawer-top .vbb-item {
   width: auto;
   height: 34px;
   padding: 0 4px;
   flex-shrink: 0;
 }
 
-/* Sub-drawer items label in horizontal mode: show below */
-.vbb-sub-drawer.vbb-sub-drawer-horizontal .vbb-item-label {
+.vbb-sub-drawer.vbb-sub-drawer-top .vbb-item-label {
   left: 50%;
   top: 100%;
   transform: translateX(-50%) translateY(4px);
 }
 
-/* Ensure horizontal sub-drawers (appended to document.body) use flex, not block */
-.vbb-sub-drawer.vbb-sub-drawer-horizontal.open {
+.vbb-sub-drawer.vbb-sub-drawer-top.open {
+  display: flex;
+}
+
+/* ─── Bottom bar sub-drawer: items in a row, horizontal scroll ── */
+.vbb-sub-drawer.vbb-sub-drawer-bottom {
+  display: flex;
+  flex-direction: row-reverse;
+  flex-wrap: nowrap;
+  align-items: center;
+  height: 40px;
+  width: auto;
+  min-width: 40px;
+  max-width: min(320px, calc(100vw - 80px));
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 2px 4px;
+  gap: 2px;
+}
+
+.vbb-sub-drawer.vbb-sub-drawer-bottom .vbb-item {
+  width: auto;
+  height: 34px;
+  padding: 0 4px;
+  flex-shrink: 0;
+}
+
+.vbb-sub-drawer.vbb-sub-drawer-bottom .vbb-item-label {
+  left: 50%;
+  top: 100%;
+  transform: translateX(-50%) translateY(4px);
+}
+
+.vbb-sub-drawer.vbb-sub-drawer-bottom.open {
+  display: flex;
+}
+
+/* ─── Left bar sub-drawer: items stacked vertically ──────────── */
+.vbb-sub-drawer.vbb-sub-drawer-left {
+  display: flex;
+  flex-direction: column;
+  width: 42px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.vbb-sub-drawer.vbb-sub-drawer-left .vbb-item {
+  width: 100%;
+  height: 34px;
+  flex-shrink: 0;
+}
+
+.vbb-sub-drawer.vbb-sub-drawer-left.open {
+  display: flex;
+}
+
+/* ─── Right bar sub-drawer: items stacked vertically ─────────── */
+.vbb-sub-drawer.vbb-sub-drawer-right {
+  display: flex;
+  flex-direction: column;
+  width: 42px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.vbb-sub-drawer.vbb-sub-drawer-right .vbb-item {
+  width: 100%;
+  height: 34px;
+  flex-shrink: 0;
+}
+
+.vbb-sub-drawer.vbb-sub-drawer-right.open {
   display: flex;
 }
 
@@ -488,12 +557,10 @@
 .vbb-sub-drawer {
   display: none;
   position: fixed;
-  width: 42px;
   background: #18181b;
   border: 1px solid #27272a;
   border-radius: 10px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-  overflow-y: auto;
   z-index: 2147483646;
   padding: 4px 0;
   scrollbar-width: thin;
@@ -502,7 +569,7 @@
 }
 
 .vbb-sub-drawer.open {
-  display: block;
+  display: flex;
 }
 
 .vbb-sub-drawer::-webkit-scrollbar {
@@ -576,6 +643,10 @@
 /* ─── Settings drawer (wider for text) ──────────────────────────── */
 .vbb-settings-drawer {
   width: 170px !important;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* Settings accordion header item */
