@@ -469,6 +469,11 @@
   transform: translateX(-50%) translateY(4px);
 }
 
+/* Ensure horizontal sub-drawers (appended to document.body) use flex, not block */
+.vbb-sub-drawer.vbb-sub-drawer-horizontal.open {
+  display: flex;
+}
+
 /* ─── Folder icon fallback when Font Awesome is blocked ─────────── */
 .vbb-folder-icon {
   font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif;
