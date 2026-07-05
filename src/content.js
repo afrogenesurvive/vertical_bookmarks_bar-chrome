@@ -445,7 +445,7 @@
       } else {
         panel.style.bottom = window.innerHeight - drawerRect.top + gap + "px";
       }
-      panel.style.left = drawerRect.left + "px";
+      panel.style.right = drawerRect.left + 50 + "px";
       panel.style.maxHeight = Math.min(300, window.innerHeight - 16) + "px";
     } else {
       // Settings opens to the side

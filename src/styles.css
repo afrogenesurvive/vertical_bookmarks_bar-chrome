@@ -156,11 +156,12 @@
 /* Vertical mode (left/right): items stack top-to-bottom */
 #vbb-container.vbb-vertical .vbb-drawer {
   flex-direction: column;
-  top: calc(6vh);
-  height: calc(95vh);
+  /* top: calc(6vh); */
+  top: 50px;
+  height: calc(100vh - 60px);
   width: 40px;
-  left: auto;
-  right: 8px;
+  /* left: auto;
+  right: 8px; */
 }
 
 /* Vertical mode: header sticks to the top of the viewport */
@@ -181,7 +182,8 @@
 /* Compact ~40px tall bar. Items flow right & wrap; drawer scrolls vertically. */
 #vbb-container.vbb-horizontal .vbb-drawer {
   flex-direction: row;
-  width: calc(95vw);
+  /* width: calc(95vw); */
+  width: calc(100vw - 60px);
   height: 40px;
   /* overflow-y: auto;
   overflow-x: hidden; */
@@ -189,11 +191,13 @@
 
 #vbb-container.vbb-horizontal.vbb-top .vbb-drawer {
   top: 8px;
-  right: calc(5vw);
+  /* right: calc(5vw); */
+  right: 50px;
 }
 #vbb-container.vbb-horizontal.vbb-bottom .vbb-drawer {
   bottom: 8px;
-  right: calc(5vw);
+  /* right: calc(5vw); */
+  right: 50px;
 }
 
 /* ─── Horizontal drawer header: compact row at the right ──────── */
