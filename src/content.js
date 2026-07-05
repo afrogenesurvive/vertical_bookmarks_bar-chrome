@@ -357,7 +357,7 @@
       // subDrawer.style.maxWidth = window.innerWidth - folderRect.right - 20 + "px";
     }
 
-    document.body.appendChild(subDrawer);
+    container.appendChild(subDrawer);
 
     // Load and render contents
     subDrawer.innerHTML = '<div class="vbb-loading">Loading</div>';
@@ -465,7 +465,7 @@
       panel.style.maxHeight = Math.min(drawerRect.height, window.innerHeight - 16) + "px";
     }
 
-    document.body.appendChild(panel);
+    container.appendChild(panel);
     void panel.offsetWidth;
     panel.classList.add("open");
     subDrawerStack.push(panel);
