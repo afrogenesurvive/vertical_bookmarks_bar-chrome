@@ -342,7 +342,7 @@
       // ── Vertical bar (left/right): sub-drawer to the side ──
       if (settings.barPosition === "right") {
         subDrawer.classList.add("vbb-sub-drawer-right");
-        subDrawer.style.left = folderRect.left - gap - 42 + "px";
+        // left set dynamically after drawer opens (see below)
       } else {
         subDrawer.classList.add("vbb-sub-drawer-left");
         subDrawer.style.left = folderRect.right + gap + "px";
@@ -375,6 +375,12 @@
 
     void subDrawer.offsetWidth;
     subDrawer.classList.add("open");
+
+    // Dynamically position right-bar sub-drawers based on actual rendered width
+    if (!isHorizontal() && settings.barPosition === "right") {
+      subDrawer.style.left = folderRect.left - gap - subDrawer.offsetWidth + "px";
+    }
+
     folderEl.classList.add("vbb-folder-open");
     subDrawerStack.push(subDrawer);
   }
@@ -435,6 +441,13 @@
   }
 
   function openSettingsPanel() {
+    // Toggle: if settings panel is already open, close it
+    const existingIdx = subDrawerStack.findIndex((sd) => sd.dataset.folderId === "__settings__");
+    if (existingIdx >= 0) {
+      closeSubDrawersFrom(existingIdx);
+      return;
+    }
+
     closeAllSubDrawers();
 
     const panel = document.createElement("div");
