@@ -342,8 +342,7 @@
       // ── Vertical bar (left/right): sub-drawer to the side ──
       if (settings.barPosition === "right") {
         subDrawer.classList.add("vbb-sub-drawer-right");
-        const subDrawerWidth = settings.showTitle ? 170 : 42;
-        subDrawer.style.left = folderRect.left - gap - subDrawerWidth + "px";
+        subDrawer.style.left = folderRect.left - gap - 42 + "px";
       } else {
         subDrawer.classList.add("vbb-sub-drawer-left");
         subDrawer.style.left = folderRect.right + gap + "px";

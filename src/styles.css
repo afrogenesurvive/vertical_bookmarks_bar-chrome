@@ -12,7 +12,7 @@
 
   /* ── Theme tokens (dark) ── */
   --vbb-bg: #18181b;
-  --vbb-border: #27272a;
+  --vbb-border: #52525b;
   --vbb-text: #f4f4f5;
   --vbb-text-muted: #a1a1aa;
   --vbb-hover: #27272a;
@@ -29,13 +29,14 @@
   width: 34px;
   height: 34px;
   border-radius: 8px;
-  background: #18181b;
-  color: #a1a1aa;
+  background: var(--vbb-bg);
+  color: var(--vbb-text-muted);
   cursor: pointer;
   z-index: 2147483647;
   display: flex;
   align-items: center;
   justify-content: center;
+  border: 2px solid var(--vbb-border);
   box-shadow:
     0 1px 3px rgba(0, 0, 0, 0.3),
     0 1px 2px rgba(0, 0, 0, 0.2);
@@ -43,14 +44,16 @@
     background 0.15s,
     color 0.15s,
     transform 0.15s,
-    box-shadow 0.15s;
+    box-shadow 0.15s,
+    border-color 0.15s;
   box-sizing: border-box;
 }
 
 #vbb-toggle:hover {
-  background: #27272a;
-  color: #f4f4f5;
+  background: var(--vbb-hover);
+  color: var(--vbb-text);
   transform: scale(1.05);
+  border-color: var(--vbb-text-muted);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
@@ -59,8 +62,9 @@
 }
 
 #vbb-toggle.active {
-  background: #27272a;
-  color: #f4f4f5;
+  background: var(--vbb-hover);
+  color: var(--vbb-text);
+  border-color: #3b82f6;
   box-shadow: 0 0 0 1px #3b82f6;
 }
 
@@ -156,7 +160,7 @@
   /* width: 42px;
   max-height: calc(100vh - 62px); */
   background: var(--vbb-bg);
-  border: 1px solid var(--vbb-border);
+  border: 2px solid var(--vbb-border);
   border-radius: 10px;
   box-shadow: var(--vbb-shadow);
   animation: vbb-fadeIn 0.12s ease-out;
@@ -178,7 +182,7 @@
   position: sticky;
   top: 0;
   z-index: 1;
-  background: #18181b;
+  background: var(--vbb-bg);
   border-radius: 10px 10px 0 0;
 }
 
@@ -567,7 +571,7 @@
   display: none;
   position: fixed;
   background: var(--vbb-bg);
-  border: 1px solid var(--vbb-border);
+  border: 2px solid var(--vbb-border);
   border-radius: 10px;
   box-shadow: var(--vbb-shadow);
   z-index: 2147483646;
@@ -764,7 +768,7 @@
 
   /* ── Theme tokens (light) ── */
   --vbb-bg: #ffffff;
-  --vbb-border: #e5e5e5;
+  --vbb-border: #a3a3a3;
   --vbb-text: #18181b;
   --vbb-text-muted: #71717a;
   --vbb-hover: #f5f5f5;
@@ -788,6 +792,7 @@
 #vbb-container.vbb-light #vbb-toggle.active {
   background: var(--vbb-hover);
   color: var(--vbb-text);
+  border-color: #3b82f6;
   box-shadow: 0 0 0 1px #3b82f6;
 }
 
