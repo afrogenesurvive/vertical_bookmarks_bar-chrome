@@ -347,7 +347,8 @@
 
     // Horizontal sub-drawer width: from its left edge to 10px from the left viewport edge
     if (isHorizontal()) {
-      subDrawer.style.maxWidth = folderRect.left - 10 + "px";
+      // subDrawer.style.maxWidth = folderRect.left - 10 + "px";
+      subDrawer.style.maxWidth = window.innerWidth - folderRect.left - 10 + "px";
     }
 
     document.body.appendChild(subDrawer);

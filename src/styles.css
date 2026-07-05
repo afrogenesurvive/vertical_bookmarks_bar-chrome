@@ -288,7 +288,7 @@
 /* ─── Horizontal items: single row, horizontal scroll only ── */
 #vbb-container.vbb-horizontal .vbb-items {
   display: flex;
-  flex-direction: row;
+  flex-direction: row-reverse;
   flex-wrap: nowrap;
   align-items: center;
   overflow-x: auto;
