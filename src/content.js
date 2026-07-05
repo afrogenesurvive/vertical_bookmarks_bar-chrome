@@ -324,7 +324,7 @@
     if (isHorizontal()) {
       // ── Horizontal bar (top/bottom): horizontal sub-drawer strip ──
       subDrawer.classList.add("vbb-sub-drawer-horizontal");
-      if (settings.barPosition === "top" || settings.barPosition === "bottom") {
+      if (settings.barPosition === "top") {
         subDrawer.style.top = folderRect.bottom + gap + "px";
         subDrawer.style.bottom = "auto";
       } else {
@@ -436,13 +436,11 @@
     const gap = 4;
 
     if (isHorizontal()) {
-      // Settings below the drawer (top bar) or above the drawer (bottom bar)
-      if (settings.barPosition === "bottom") {
-        panel.style.bottom = window.innerHeight - drawerRect.top + gap + "px";
-        panel.style.top = "auto";
-      } else {
+      // Settings opens below (top bar) or above (bottom bar)
+      if (settings.barPosition === "top") {
         panel.style.top = drawerRect.bottom + gap + "px";
-        panel.style.bottom = "auto";
+      } else {
+        panel.style.bottom = window.innerHeight - drawerRect.top + gap + "px";
       }
       panel.style.left = drawerRect.left + "px";
       panel.style.maxHeight = Math.min(300, window.innerHeight - 16) + "px";
@@ -605,7 +603,7 @@
     const pw = 170;
     const g = 4;
     if (isHorizontal()) {
-      if (settings.barPosition === "top" || settings.barPosition === "bottom") {
+      if (settings.barPosition === "top") {
         panelEl.style.top = drawerRect.bottom + g + "px";
         panelEl.style.bottom = "auto";
       } else {
