@@ -17,6 +17,7 @@
     barPosition: "right", // 'left' | 'right' | 'top' | 'bottom'
     theme: "dark", // 'dark' | 'light' | 'system'
     showTitle: false,
+    fontSize: 13, // px, base font size for all text
   };
   let systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
 
@@ -125,6 +126,7 @@
     applyBarPosition();
     applyTheme();
     applyShowTitle();
+    applyFontSize();
   });
 
   // ─── Listen for messages from background ────────────────────────────────
@@ -440,6 +442,10 @@
     container.classList.toggle("vbb-show-titles", settings.showTitle);
   }
 
+  function applyFontSize() {
+    container.style.setProperty("--vbb-font-size", settings.fontSize + "px");
+  }
+
   function openSettingsPanel() {
     // Toggle: if settings panel is already open, close it
     const existingIdx = subDrawerStack.findIndex((sd) => sd.dataset.folderId === "__settings__");
@@ -617,6 +623,31 @@
         settings.showTitle = value;
         saveSettings();
         applyShowTitle();
+        repositionSettingsPanel(container);
+        renderSettings(container);
+      },
+    );
+
+    const fontSizeOptions = [10, 11, 12, 13, 14, 15, 16, 18, 20];
+    const fontSizeLabels = {};
+    const fontSizeIcons = {};
+    fontSizeOptions.forEach((s) => {
+      fontSizeLabels[s] = s + "px";
+      fontSizeIcons[s] = s === settings.fontSize ? "fa-check-circle" : "fa-circle";
+    });
+
+    addAccordionSection(
+      "Font size",
+      "fa-text-height",
+      settings.fontSize,
+      settings.fontSize + "px",
+      fontSizeOptions,
+      fontSizeLabels,
+      fontSizeIcons,
+      (value) => {
+        settings.fontSize = value;
+        saveSettings();
+        applyFontSize();
         repositionSettingsPanel(container);
         renderSettings(container);
       },

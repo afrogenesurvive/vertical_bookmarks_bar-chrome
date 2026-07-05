@@ -6,7 +6,7 @@
   right: 0;
   z-index: 2147483647;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  font-size: 13px;
+  font-size: var(--vbb-font-size, 13px);
   line-height: 1.4;
   color-scheme: dark;
 
@@ -27,7 +27,7 @@
   top: 8px;
   right: 8px;
   width: 34px;
-  height: 34px;
+  height: 40px;
   border-radius: 8px;
   background: var(--vbb-bg);
   color: var(--vbb-text-muted);
@@ -89,14 +89,14 @@
   align-items: center;
   gap: 4px;
   color: var(--vbb-text, #f4f4f5);
-  font-size: 11px;
+  font-size: calc(var(--vbb-font-size, 13px) - 2px);
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
 }
 
 .vbb-header-title i {
-  font-size: 12px;
+  font-size: calc(var(--vbb-font-size, 13px) - 1px);
   color: var(--vbb-text-muted, #a1a1aa);
 }
 
@@ -230,7 +230,7 @@
   flex-direction: row;
   align-items: center;
   gap: 4px;
-  font-size: 11px;
+  font-size: calc(var(--vbb-font-size, 13px) - 2px);
   font-weight: 600;
   color: var(--vbb-text, #f4f4f5);
 }
@@ -418,7 +418,7 @@
   color: #f4f4f5;
   padding: 3px 8px;
   border-radius: 5px;
-  font-size: 12px;
+  font-size: calc(var(--vbb-font-size, 13px) - 1px);
   line-height: 1.4;
   white-space: nowrap;
   z-index: 2147483647;
@@ -461,10 +461,9 @@
   height: 40px;
   width: auto;
   min-width: 40px;
-  max-width: min(320px, calc(100vw - 80px));
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 2px 4px;
+  padding: 2px 0;
   gap: 2px;
 }
 
@@ -494,10 +493,9 @@
   height: 40px;
   width: auto;
   min-width: 40px;
-  max-width: min(320px, calc(100vw - 80px));
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 2px 4px;
+  padding: 2px 0;
   gap: 2px;
 }
 
@@ -611,7 +609,7 @@
   border-radius: 3px;
   background: #3f3f46;
   color: #a1a1aa;
-  font-size: 9px;
+  font-size: calc(var(--vbb-font-size, 13px) - 4px);
   font-weight: 700;
   flex-shrink: 0;
   pointer-events: none;
@@ -625,7 +623,7 @@
   justify-content: center;
   padding: 12px 4px;
   color: #71717a;
-  font-size: 11px;
+  font-size: calc(var(--vbb-font-size, 13px) - 2px);
 }
 
 .vbb-loading::after {
@@ -648,7 +646,7 @@
 /* ─── Error state ───────────────────────────────────────────────── */
 .vbb-error {
   color: #71717a;
-  font-size: 11px;
+  font-size: calc(var(--vbb-font-size, 13px) - 2px);
   text-align: center;
   padding: 12px 4px;
 }
@@ -749,7 +747,7 @@
 .vbb-settings-label {
   flex: 1;
   color: var(--vbb-text, #f4f4f5);
-  font-size: 12px;
+  font-size: calc(var(--vbb-font-size, 13px) - 1px);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -757,7 +755,7 @@
 
 .vbb-settings-value {
   color: var(--vbb-text-muted, #a1a1aa);
-  font-size: 11px;
+  font-size: calc(var(--vbb-font-size, 13px) - 2px);
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -920,7 +918,7 @@
   border: none;
   box-shadow: none;
   padding: 0;
-  font-size: 11px;
+  font-size: calc(var(--vbb-font-size, 13px) - 2px);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
