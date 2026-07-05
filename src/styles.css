@@ -114,23 +114,36 @@
   line-height: 1;
 }
 
-/* ─── Left-side bar ─────────────────────────────────────────────── */
-#vbb-container.vbb-left #vbb-toggle {
+/* ─── Left-side bar (vertical-left) ──────────────────────────── */
+#vbb-container.vbb-left #vbb-toggle,
+#vbb-container.vbb-vertical-left #vbb-toggle {
   right: auto;
   left: 8px;
 }
 
-#vbb-container.vbb-left .vbb-drawer {
+#vbb-container.vbb-left .vbb-drawer,
+#vbb-container.vbb-vertical-left .vbb-drawer {
   right: auto;
   left: 8px;
+}
+
+/* ─── Right-side bar (vertical-right) ────────────────────────── */
+#vbb-container.vbb-vertical-right #vbb-toggle {
+  left: auto;
+  right: 8px;
+}
+
+#vbb-container.vbb-vertical-right .vbb-drawer {
+  left: auto;
+  right: 8px;
 }
 
 /* ─── Main drawer ───────────────────────────────────────────────── */
 .vbb-drawer {
   display: none;
   position: fixed;
-  top: 50px;
-  right: 8px;
+  /* top: 50px; */
+  /* right: 8px; */
   /* width: 42px;
   max-height: calc(100vh - 62px); */
   background: #18181b;
@@ -146,6 +159,8 @@
   top: calc(6vh);
   height: calc(95vh);
   width: 40px;
+  left: auto;
+  right: 8px;
 }
 
 /* Vertical mode: header sticks to the top of the viewport */

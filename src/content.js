@@ -403,7 +403,10 @@
     container.classList.toggle("vbb-top", settings.barPosition === "top");
     container.classList.toggle("vbb-bottom", settings.barPosition === "bottom");
     container.classList.toggle("vbb-horizontal", isHorizontal());
-    container.classList.toggle("vbb-vertical", !isHorizontal());
+    const isVert = !isHorizontal();
+    container.classList.toggle("vbb-vertical", isVert);
+    container.classList.toggle("vbb-vertical-left", isVert && settings.barPosition === "left");
+    container.classList.toggle("vbb-vertical-right", isVert && settings.barPosition === "right");
     closeAllSubDrawers();
   }
 
