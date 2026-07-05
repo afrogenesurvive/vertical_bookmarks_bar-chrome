@@ -939,14 +939,14 @@
   min-width: 42px;
   display: none;
   flex-direction: row-reverse;
-  flex-wrap: wrap;
-  align-content: flex-start;
+  flex-wrap: nowrap;
+  align-items: center;
   padding: 2px 4px;
   gap: 2px;
-  max-height: 40px;
+  height: 40px;
   max-width: 50vw;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 #vbb-container.vbb-horizontal .vbb-sub-drawer.open {

@@ -319,7 +319,7 @@
     const subDrawer = document.createElement("div");
     subDrawer.className = "vbb-sub-drawer vbb-folder-drawer";
     subDrawer.dataset.folderId = item.id;
-    const gap = 4;
+    const gap = 8;
 
     if (isHorizontal()) {
       // ── Horizontal bar (top/bottom): horizontal sub-drawer strip ──
@@ -443,7 +443,7 @@
 
     const drawerRect = drawer.getBoundingClientRect();
     const panelWidth = 170;
-    const gap = 4;
+    const gap = 8;
 
     if (isHorizontal()) {
       // Settings opens below (top bar) or above (bottom bar)
@@ -611,7 +611,7 @@
   function repositionSettingsPanel(panelEl) {
     const drawerRect = drawer.getBoundingClientRect();
     const pw = 170;
-    const g = 4;
+    const g = 8;
     if (isHorizontal()) {
       if (settings.barPosition === "top") {
         panelEl.style.top = drawerRect.bottom + g + "px";
