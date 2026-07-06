@@ -26,7 +26,7 @@
   position: fixed;
   top: 8px;
   right: 8px;
-  width: 40px;
+  width: 34px;
   height: 40px;
   border-radius: 8px;
   background: var(--vbb-bg);
@@ -195,11 +195,9 @@
 /* Compact ~40px tall bar. Items flow right & wrap; drawer scrolls vertically. */
 #vbb-container.vbb-horizontal .vbb-drawer {
   flex-direction: row;
-  /* width: calc(95vw); */
-  width: calc(100vw - 60px);
+  width: fit-content;
+  max-width: calc(100vw - 60px);
   height: 40px;
-  /* overflow-y: auto;
-  overflow-x: hidden; */
 }
 
 #vbb-container.vbb-horizontal.vbb-top .vbb-drawer {
@@ -306,9 +304,9 @@
   align-items: center;
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 2px 0;
+  padding: 2px 4px;
   gap: 2px;
-  flex: 1;
+  min-width: 0;
 }
 
 #vbb-container.vbb-horizontal .vbb-item {
@@ -884,10 +882,7 @@
   width: 170px !important;
 }
 
-/* In horizontal mode, keep the bar wide when titles are shown */
-#vbb-container.vbb-show-titles.vbb-horizontal .vbb-drawer {
-  width: calc(100vw - 80px) !important;
-}
+
 
 /* In horizontal show-titles mode, labels are always visible */
 #vbb-container.vbb-show-titles.vbb-horizontal .vbb-item-label {
