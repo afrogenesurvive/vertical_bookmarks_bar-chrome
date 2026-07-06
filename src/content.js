@@ -18,6 +18,10 @@
     theme: "dark", // 'dark' | 'light' | 'system'
     showTitle: false,
     fontSize: 13, // px, base font size for all text
+    movable: false, // whether the toggle can be dragged
+    orientation: "vertical", // 'vertical' | 'horizontal' (only when movable)
+    toggleX: null, // px, CSS left position of toggle (set by drag or default)
+    toggleY: null, // px, CSS top position of toggle (set by drag or default)
   };
   let systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
 
@@ -121,9 +125,17 @@
   container.appendChild(drawer);
   document.documentElement.appendChild(container);
 
+  // Drag init is called after settings load (if movable) — see below
+
   // ─── Load persisted settings and apply them ─────────────────────────────
   loadSettings(() => {
     applyBarPosition();
+    if (settings.movable) {
+      applyTogglePosition();
+      initToggleDrag();
+      container.classList.add("vbb-movable");
+      applyOrientationClass();
+    }
     applyTheme();
     applyShowTitle();
     applyFontSize();
@@ -144,8 +156,13 @@
     }
   });
 
-  // ─── Drawer toggle ───────────────────────────────────────────────────────
+  // ─── Drawer toggle (ignored if just dragged) ─────────────────────────────
+  let wasDrag = false;
   toggle.addEventListener("click", (e) => {
+    if (wasDrag) {
+      wasDrag = false;
+      return;
+    }
     e.stopPropagation();
     if (isDrawerOpen) {
       closeDrawer();
@@ -171,6 +188,7 @@
   // ─── Drawer management ───────────────────────────────────────────────────
   function openDrawer() {
     isDrawerOpen = true;
+    positionDrawer();
     drawer.classList.add("open");
     toggle.classList.add("active");
     loadBookmarksBar();
@@ -324,9 +342,9 @@
     const gap = 8;
 
     if (isHorizontal()) {
-      // ── Horizontal bar (top/bottom): horizontal sub-drawer strip ──
+      // ── Horizontal orientation: horizontal sub-drawer strip ──
       subDrawer.classList.add("vbb-sub-drawer-horizontal");
-      if (settings.barPosition === "top") {
+      if (!settings.movable || isToggleOnTopHalf()) {
         subDrawer.classList.add("vbb-sub-drawer-top");
         subDrawer.style.top = folderRect.bottom + gap + "px";
         subDrawer.style.bottom = "auto";
@@ -338,25 +356,22 @@
       // Anchor right edge left of the folder to create a gap between them
       subDrawer.style.right = window.innerWidth - folderRect.left + gap + "px";
       subDrawer.style.left = "auto";
-      // Remove default fixed width so horizontal class applies properly
       subDrawer.style.width = "";
+      subDrawer.style.maxWidth = Math.max(40, folderRect.left - 20) + "px";
     } else {
-      // ── Vertical bar (left/right): sub-drawer to the side ──
-      if (settings.barPosition === "right") {
-        subDrawer.classList.add("vbb-sub-drawer-right");
-        // left set dynamically after drawer opens (see below)
-      } else {
+      // ── Vertical orientation: sub-drawer to the side ──
+      const opensRight = settings.movable ? isToggleOnLeftSide() : settings.barPosition !== "right";
+      if (opensRight) {
         subDrawer.classList.add("vbb-sub-drawer-left");
         subDrawer.style.left = folderRect.right + gap + "px";
+        subDrawer.style.right = "auto";
+      } else {
+        subDrawer.classList.add("vbb-sub-drawer-right");
+        subDrawer.style.right = "auto";
+        // left set dynamically after drawer opens (see below)
       }
       subDrawer.style.top = folderRect.top + "px";
       subDrawer.style.maxHeight = window.innerHeight - folderRect.top - 20 + "px";
-    }
-
-    // Cap horizontal sub-drawer width so it stops 60px from the left viewport edge
-    if (isHorizontal()) {
-      subDrawer.style.maxWidth = Math.max(40, folderRect.left - 20) + "px";
-      // subDrawer.style.maxWidth = window.innerWidth - folderRect.right - 20 + "px";
     }
 
     container.appendChild(subDrawer);
@@ -378,9 +393,12 @@
     void subDrawer.offsetWidth;
     subDrawer.classList.add("open");
 
-    // Dynamically position right-bar sub-drawers based on actual rendered width
-    if (!isHorizontal() && settings.barPosition === "right") {
-      subDrawer.style.left = folderRect.left - gap - subDrawer.offsetWidth + "px";
+    // Dynamically position right-side sub-drawers based on actual rendered width
+    if (!isHorizontal()) {
+      const opensRight = settings.movable ? isToggleOnLeftSide() : settings.barPosition !== "right";
+      if (!opensRight) {
+        subDrawer.style.left = folderRect.left - gap - subDrawer.offsetWidth + "px";
+      }
     }
 
     folderEl.classList.add("vbb-folder-open");
@@ -409,7 +427,23 @@
   }
 
   function isHorizontal() {
+    if (settings.movable) return settings.orientation === "horizontal";
     return settings.barPosition === "top" || settings.barPosition === "bottom";
+  }
+
+  function isToggleOnLeftSide() {
+    const tr = toggle.getBoundingClientRect();
+    return tr.left + tr.width / 2 < window.innerWidth / 2;
+  }
+
+  function isToggleOnTopHalf() {
+    const tr = toggle.getBoundingClientRect();
+    return tr.top + tr.height / 2 < window.innerHeight / 2;
+  }
+
+  function applyOrientationClass() {
+    container.classList.toggle("vbb-movable-vertical", !isHorizontal());
+    container.classList.toggle("vbb-movable-horizontal", isHorizontal());
   }
 
   function applyBarPosition() {
@@ -417,11 +451,13 @@
     container.classList.toggle("vbb-right", settings.barPosition === "right");
     container.classList.toggle("vbb-top", settings.barPosition === "top");
     container.classList.toggle("vbb-bottom", settings.barPosition === "bottom");
-    container.classList.toggle("vbb-horizontal", isHorizontal());
-    const isVert = !isHorizontal();
-    container.classList.toggle("vbb-vertical", isVert);
-    container.classList.toggle("vbb-vertical-left", isVert && settings.barPosition === "left");
-    container.classList.toggle("vbb-vertical-right", isVert && settings.barPosition === "right");
+    if (!settings.movable) {
+      container.classList.toggle("vbb-horizontal", isHorizontal());
+      const isVert = !isHorizontal();
+      container.classList.toggle("vbb-vertical", isVert);
+      container.classList.toggle("vbb-vertical-left", isVert && settings.barPosition === "left");
+      container.classList.toggle("vbb-vertical-right", isVert && settings.barPosition === "right");
+    }
     closeAllSubDrawers();
   }
 
@@ -446,6 +482,131 @@
     container.style.setProperty("--vbb-font-size", settings.fontSize + "px");
   }
 
+  // ─── Toggle position (movable only) ────────────────────────────────────
+  function applyTogglePosition() {
+    if (!settings.movable) return;
+    if (settings.toggleX !== null && settings.toggleY !== null) {
+      toggle.style.left = settings.toggleX + "px";
+      toggle.style.top = settings.toggleY + "px";
+    } else {
+      setDefaultTogglePosition();
+    }
+  }
+
+  function setDefaultTogglePosition() {
+    if (!settings.movable) return;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const tw = 38;
+    const th = 48;
+    switch (settings.barPosition) {
+      case "right":
+        settings.toggleX = vw - tw - 8;
+        settings.toggleY = 8;
+        break;
+      case "left":
+        settings.toggleX = 8;
+        settings.toggleY = 8;
+        break;
+      case "top":
+        settings.toggleX = vw - tw - 8;
+        settings.toggleY = 8;
+        break;
+      case "bottom":
+        settings.toggleX = vw - tw - 8;
+        settings.toggleY = vh - th - 8;
+        break;
+    }
+    toggle.style.left = settings.toggleX + "px";
+    toggle.style.top = settings.toggleY + "px";
+    saveSettings();
+  }
+
+  // ─── Position drawer relative to toggle (movable only) ──────────────────
+  function positionDrawer() {
+    if (!settings.movable) return;
+    const tr = toggle.getBoundingClientRect();
+    const gap = 4;
+    applyOrientationClass();
+
+    if (isHorizontal()) {
+      // Horizontal: drawer below (or above) toggle
+      if (isToggleOnTopHalf()) {
+        drawer.style.top = tr.bottom + gap + "px";
+        drawer.style.bottom = "auto";
+      } else {
+        drawer.style.bottom = window.innerHeight - tr.top + gap + "px";
+        drawer.style.top = "auto";
+      }
+      drawer.style.left = Math.max(0, tr.left) + "px";
+      drawer.style.right = "auto";
+      drawer.style.height = "";
+    } else {
+      // Vertical: drawer to the right (or left) of toggle
+      drawer.style.top = tr.top + "px";
+      drawer.style.bottom = "auto";
+      drawer.style.height = Math.max(40, window.innerHeight - tr.top - 20) + "px";
+
+      if (isToggleOnLeftSide()) {
+        drawer.style.left = tr.right + gap + "px";
+        drawer.style.right = "auto";
+      } else {
+        drawer.style.left = tr.left - 44 + "px";
+        drawer.style.right = "auto";
+      }
+    }
+  }
+
+  // ─── Make toggle draggable (movable only) ──────────────────────────────
+  function initToggleDrag() {
+    if (!settings.movable) return;
+    let isDragging = false;
+    let dragStartX, dragStartY;
+    let origLeft, origTop;
+
+    toggle.addEventListener("mousedown", (e) => {
+      if (e.button !== 0) return;
+      isDragging = false;
+      dragStartX = e.clientX;
+      dragStartY = e.clientY;
+      origLeft = toggle.offsetLeft;
+      origTop = toggle.offsetTop;
+
+      const onMouseMove = (ev) => {
+        const dx = ev.clientX - dragStartX;
+        const dy = ev.clientY - dragStartY;
+        if (!isDragging && (Math.abs(dx) > 3 || Math.abs(dy) > 3)) {
+          isDragging = true;
+          wasDrag = true;
+          toggle.classList.add("vbb-dragging");
+          // Close all drawers when dragging starts
+          if (isDrawerOpen) closeDrawer();
+          closeAllSubDrawers();
+        }
+        if (isDragging) {
+          ev.preventDefault();
+          toggle.style.left = Math.max(0, origLeft + dx) + "px";
+          toggle.style.top = Math.max(0, origTop + dy) + "px";
+          toggle.style.right = "auto";
+        }
+      };
+
+      const onMouseUp = () => {
+        document.removeEventListener("mousemove", onMouseMove);
+        document.removeEventListener("mouseup", onMouseUp);
+        if (isDragging) {
+          toggle.classList.remove("vbb-dragging");
+          settings.toggleX = parseInt(toggle.style.left, 10);
+          settings.toggleY = parseInt(toggle.style.top, 10);
+          saveSettings();
+        }
+      };
+
+      document.addEventListener("mousemove", onMouseMove);
+      document.addEventListener("mouseup", onMouseUp);
+    });
+  }
+
   function openSettingsPanel() {
     // Toggle: if settings panel is already open, close it
     const existingIdx = subDrawerStack.findIndex((sd) => sd.dataset.folderId === "__settings__");
@@ -466,20 +627,28 @@
 
     if (isHorizontal()) {
       // Settings opens below (top bar) or above (bottom bar)
-      if (settings.barPosition === "top") {
+      if (!settings.movable || isToggleOnTopHalf()) {
         panel.style.top = drawerRect.bottom + gap + "px";
+        panel.style.bottom = "auto";
       } else {
         panel.style.bottom = window.innerHeight - drawerRect.top + gap + "px";
+        panel.style.top = "auto";
       }
       panel.style.right = drawerRect.left + 40 + "px";
+      panel.style.left = "auto";
     } else {
       // Settings opens to the side
-      if (settings.barPosition === "right") {
+      if (!settings.movable && settings.barPosition === "right") {
         panel.style.left = drawerRect.left - panelWidth - gap + "px";
-      } else {
+      } else if (!settings.movable) {
         panel.style.left = drawerRect.right + gap + "px";
+      } else if (isToggleOnLeftSide()) {
+        panel.style.left = drawerRect.right + gap + "px";
+      } else {
+        panel.style.left = drawerRect.left - panelWidth - gap + "px";
       }
       panel.style.top = drawerRect.top + "px";
+      panel.style.bottom = "auto";
     }
 
     // Same max-height for both modes so settings content fits regardless of bar height
@@ -572,22 +741,41 @@
     const posLabels = { right: "Right", bottom: "Bottom", left: "Left", top: "Top" };
     const posIcons = { right: "fa-arrow-right", bottom: "fa-arrow-down", left: "fa-arrow-left", top: "fa-arrow-up" };
 
-    addAccordionSection(
-      "Bar position",
-      posIcons[settings.barPosition],
-      settings.barPosition,
-      posLabels[settings.barPosition],
-      ["right", "bottom", "left", "top"],
-      posLabels,
-      posIcons,
-      (value) => {
-        settings.barPosition = value;
-        saveSettings();
-        applyBarPosition();
-        repositionSettingsPanel(container);
-        renderSettings(container);
-      },
-    );
+    if (settings.movable) {
+      // Show bar position as read-only when movable is on
+      const lockedItem = document.createElement("div");
+      lockedItem.className = "vbb-settings-item";
+      lockedItem.style.opacity = "0.45";
+      lockedItem.style.cursor = "default";
+      lockedItem.title = "Locked while Movable is on";
+      lockedItem.innerHTML =
+        '<span class="vbb-settings-icon"><i class="fa-solid ' +
+        posIcons[settings.barPosition] +
+        '"></i></span>' +
+        '<span class="vbb-settings-label">Bar position</span>' +
+        '<span class="vbb-settings-value">' +
+        posLabels[settings.barPosition] +
+        " &middot; locked</span>";
+      container.appendChild(lockedItem);
+    } else {
+      addAccordionSection(
+        "Bar position",
+        posIcons[settings.barPosition],
+        settings.barPosition,
+        posLabels[settings.barPosition],
+        ["right", "bottom", "left", "top"],
+        posLabels,
+        posIcons,
+        (value) => {
+          settings.barPosition = value;
+          saveSettings();
+          applyBarPosition();
+          if (settings.movable) setDefaultTogglePosition();
+          repositionSettingsPanel(container);
+          renderSettings(container);
+        },
+      );
+    }
 
     const themeLabels = { dark: "Dark", light: "Light", system: "System" };
     const themeIcons = { dark: "fa-moon", light: "fa-sun", system: "fa-desktop" };
@@ -628,6 +816,66 @@
       },
     );
 
+    const movableOptLabels = { true: "On", false: "Off" };
+    const movableOptIcons = { true: "fa-check-circle", false: "fa-circle" };
+
+    addAccordionSection(
+      "Movable",
+      "fa-arrows",
+      settings.movable,
+      movableOptLabels[settings.movable],
+      [true, false],
+      movableOptLabels,
+      movableOptIcons,
+      (value) => {
+        settings.movable = value;
+        saveSettings();
+        if (value) {
+          container.classList.add("vbb-movable");
+          // Clear inline styles so JS can take over toggle position
+          toggle.style.top = "";
+          toggle.style.right = "";
+          toggle.style.left = "";
+          applyTogglePosition();
+          initToggleDrag();
+          applyOrientationClass();
+        } else {
+          container.classList.remove("vbb-movable");
+          container.classList.remove("vbb-movable-vertical");
+          container.classList.remove("vbb-movable-horizontal");
+          toggle.style.top = "";
+          toggle.style.right = "";
+          toggle.style.left = "";
+        }
+        closeAllSubDrawers();
+        repositionSettingsPanel(container);
+        renderSettings(container);
+      },
+    );
+
+    // ── Orientation (only when movable) ──
+    if (settings.movable) {
+      const orientLabels = { vertical: "Vertical", horizontal: "Horizontal" };
+      const orientIcons = { vertical: "fa-bars", horizontal: "fa-arrows-alt-h" };
+      addAccordionSection(
+        "Orientation",
+        orientIcons[settings.orientation],
+        settings.orientation,
+        orientLabels[settings.orientation],
+        ["vertical", "horizontal"],
+        orientLabels,
+        orientIcons,
+        (value) => {
+          settings.orientation = value;
+          saveSettings();
+          applyOrientationClass();
+          closeAllSubDrawers();
+          repositionSettingsPanel(container);
+          renderSettings(container);
+        },
+      );
+    }
+
     const fontSizeOptions = [10, 11, 12, 13, 14, 15, 16, 18, 20];
     const fontSizeLabels = {};
     const fontSizeIcons = {};
@@ -659,7 +907,7 @@
     const pw = 170;
     const g = 8;
     if (isHorizontal()) {
-      if (settings.barPosition === "top") {
+      if (!settings.movable || isToggleOnTopHalf()) {
         panelEl.style.top = drawerRect.bottom + g + "px";
         panelEl.style.bottom = "auto";
       } else {
@@ -667,14 +915,20 @@
         panelEl.style.top = "auto";
       }
       panelEl.style.left = drawerRect.left + "px";
+      panelEl.style.right = "auto";
     } else {
-      if (settings.barPosition === "right") {
+      if (!settings.movable && settings.barPosition === "right") {
         panelEl.style.left = drawerRect.left - g - pw + "px";
-      } else {
+      } else if (!settings.movable) {
         panelEl.style.left = drawerRect.right + g + "px";
+      } else if (isToggleOnLeftSide()) {
+        panelEl.style.left = drawerRect.right + g + "px";
+      } else {
+        panelEl.style.left = drawerRect.left - g - pw + "px";
       }
       panelEl.style.top = drawerRect.top + "px";
       panelEl.style.bottom = "auto";
+      panelEl.style.right = "auto";
     }
   }
 })();

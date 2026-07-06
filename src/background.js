@@ -26,13 +26,17 @@ async function ensureContentScript(tabId) {
 
 // ─── Inject into every tab when it loads or is activated ──────────────────
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (changeInfo.status === "complete" && tab.url && (tab.url.startsWith("http") || tab.url === "chrome://newtab/")) {
+  if (changeInfo.status === "complete") {
     ensureContentScript(tabId);
   }
 });
 
 chrome.tabs.onActivated.addListener((activeInfo) => {
   ensureContentScript(activeInfo.tabId);
+});
+
+chrome.tabs.onCreated.addListener((tab) => {
+  if (tab.id) ensureContentScript(tab.id);
 });
 
 // Toggle the drawer when the extension toolbar icon is clicked

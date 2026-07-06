@@ -20,7 +20,7 @@
   --vbb-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
 }
 
-/* ─── Toggle button ─────────────────────────────────────────────── */
+/* ─── Toggle button (non-movable default) ──────────────────────── */
 #vbb-toggle {
   all: unset;
   position: fixed;
@@ -47,6 +47,50 @@
     box-shadow 0.15s,
     border-color 0.15s;
   box-sizing: border-box;
+}
+
+/* Non-movable: left-side bar */
+#vbb-container:not(.vbb-movable).vbb-left #vbb-toggle,
+#vbb-container:not(.vbb-movable).vbb-vertical-left #vbb-toggle {
+  right: auto;
+  left: 8px;
+}
+
+/* Non-movable: right-side bar */
+#vbb-container:not(.vbb-movable).vbb-vertical-right #vbb-toggle {
+  left: auto;
+  right: 8px;
+}
+
+/* Non-movable: drawer position overrides */
+#vbb-container:not(.vbb-movable).vbb-left .vbb-drawer,
+#vbb-container:not(.vbb-movable).vbb-vertical-left .vbb-drawer {
+  right: auto;
+  left: 8px;
+}
+
+#vbb-container:not(.vbb-movable).vbb-vertical-right .vbb-drawer {
+  left: auto;
+  right: 8px;
+}
+
+/* ─── Movable toggle overrides (position set by JS) ────────────── */
+#vbb-container.vbb-movable #vbb-toggle {
+  top: auto;
+  right: auto;
+  left: auto;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#vbb-container.vbb-movable #vbb-toggle.vbb-dragging {
+  cursor: grabbing;
+  transform: scale(1.08);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  transition:
+    transform 0.05s,
+    box-shadow 0.05s;
 }
 
 #vbb-toggle:hover {
@@ -127,38 +171,10 @@
   line-height: 1;
 }
 
-/* ─── Left-side bar (vertical-left) ──────────────────────────── */
-#vbb-container.vbb-left #vbb-toggle,
-#vbb-container.vbb-vertical-left #vbb-toggle {
-  right: auto;
-  left: 8px;
-}
-
-#vbb-container.vbb-left .vbb-drawer,
-#vbb-container.vbb-vertical-left .vbb-drawer {
-  right: auto;
-  left: 8px;
-}
-
-/* ─── Right-side bar (vertical-right) ────────────────────────── */
-#vbb-container.vbb-vertical-right #vbb-toggle {
-  left: auto;
-  right: 8px;
-}
-
-#vbb-container.vbb-vertical-right .vbb-drawer {
-  left: auto;
-  right: 8px;
-}
-
 /* ─── Main drawer ───────────────────────────────────────────────── */
 .vbb-drawer {
   display: none;
   position: fixed;
-  /* top: 50px; */
-  /* right: 8px; */
-  /* width: 42px;
-  max-height: calc(100vh - 62px); */
   background: var(--vbb-bg);
   border: 2px solid var(--vbb-border);
   border-radius: 10px;
@@ -166,15 +182,118 @@
   animation: vbb-fadeIn 0.12s ease-out;
 }
 
-/* Vertical mode (left/right): items stack top-to-bottom */
-#vbb-container.vbb-vertical .vbb-drawer {
+/* Non-movable vertical mode: hardcoded positions */
+#vbb-container:not(.vbb-movable).vbb-vertical .vbb-drawer {
   flex-direction: column;
-  /* top: calc(6vh); */
   top: 50px;
   height: calc(100vh - 60px);
   width: 40px;
-  /* left: auto;
-  right: 8px; */
+}
+
+/* Movable vertical orientation: position set by JS */
+#vbb-container.vbb-movable.vbb-movable-vertical .vbb-drawer {
+  flex-direction: column;
+  width: 40px;
+}
+
+/* Movable horizontal orientation: position set by JS */
+#vbb-container.vbb-movable.vbb-movable-horizontal .vbb-drawer {
+  flex-direction: row;
+  width: fit-content;
+  max-width: calc(100vw - 60px);
+  height: 40px;
+}
+
+/* Movable horizontal: header on the right */
+#vbb-container.vbb-movable.vbb-movable-horizontal .vbb-drawer-header {
+  flex-direction: row;
+  align-items: center;
+  border-bottom: none;
+  border-left: 1px solid var(--vbb-border, #27272a);
+  padding: 2px 6px;
+  gap: 4px;
+  flex-shrink: 0;
+  align-self: stretch;
+  order: 1;
+}
+
+#vbb-container.vbb-movable.vbb-movable-horizontal .vbb-header-title {
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+  font-size: calc(var(--vbb-font-size, 13px) - 2px);
+  font-weight: 600;
+  color: var(--vbb-text, #f4f4f5);
+}
+
+#vbb-container.vbb-movable.vbb-movable-horizontal .vbb-header-title i {
+  font-size: 14px;
+}
+
+#vbb-container.vbb-movable.vbb-movable-horizontal .vbb-settings-btn {
+  font-size: 12px;
+}
+
+/* Movable horizontal: chevron rotated for sub-drawers below/above */
+#vbb-container.vbb-movable.vbb-movable-horizontal .vbb-expand-icon {
+  transform: rotate(90deg);
+}
+
+#vbb-container.vbb-movable.vbb-movable-horizontal .vbb-expand-icon.rotated {
+  transform: rotate(180deg);
+}
+
+/* Movable horizontal: items flow in a row */
+#vbb-container.vbb-movable.vbb-movable-horizontal .vbb-items {
+  display: flex;
+  flex-direction: row-reverse;
+  flex-wrap: nowrap;
+  align-items: center;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 2px 4px;
+  gap: 2px;
+  min-width: 0;
+}
+
+#vbb-container.vbb-movable.vbb-movable-horizontal .vbb-item {
+  width: auto;
+  height: 34px;
+  padding: 0 4px;
+  flex-shrink: 0;
+}
+
+/* Movable horizontal: item labels below */
+#vbb-container.vbb-movable.vbb-movable-horizontal .vbb-item-label {
+  left: 50%;
+  top: 100%;
+  transform: translateX(-50%) translateY(4px);
+}
+
+/* Movable vertical: items stack */
+#vbb-container.vbb-movable.vbb-movable-vertical .vbb-items {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Movable horizontal show-titles mode */
+#vbb-container.vbb-movable.vbb-movable-horizontal.vbb-show-titles .vbb-item {
+  width: auto;
+  padding: 0 8px;
+  gap: 6px;
+}
+
+#vbb-container.vbb-movable.vbb-movable-horizontal.vbb-show-titles .vbb-item-label {
+  visibility: visible;
+  opacity: 1;
+  position: static;
+  transform: none;
+  background: transparent;
+  color: inherit;
+  padding: 0;
+  border: none;
+  box-shadow: none;
+  pointer-events: auto;
 }
 
 /* Vertical mode: header sticks to the top of the viewport */
@@ -200,14 +319,13 @@
   height: 40px;
 }
 
-#vbb-container.vbb-horizontal.vbb-top .vbb-drawer {
+/* Non-movable horizontal: hardcoded positions */
+#vbb-container:not(.vbb-movable).vbb-horizontal.vbb-top .vbb-drawer {
   top: 8px;
-  /* right: calc(5vw); */
   right: 50px;
 }
-#vbb-container.vbb-horizontal.vbb-bottom .vbb-drawer {
+#vbb-container:not(.vbb-movable).vbb-horizontal.vbb-bottom .vbb-drawer {
   bottom: 8px;
-  /* right: calc(5vw); */
   right: 50px;
 }
 
@@ -849,7 +967,8 @@
   background: #d4d4d4;
 }
 
-#vbb-container.vbb-light.vbb-horizontal .vbb-drawer-header {
+#vbb-container.vbb-light.vbb-horizontal .vbb-drawer-header,
+#vbb-container.vbb-light.vbb-movable-horizontal .vbb-drawer-header {
   border-right-color: var(--vbb-border);
   border-bottom: none;
 }
@@ -882,10 +1001,9 @@
   width: 170px !important;
 }
 
-
-
 /* In horizontal show-titles mode, labels are always visible */
-#vbb-container.vbb-show-titles.vbb-horizontal .vbb-item-label {
+#vbb-container.vbb-show-titles.vbb-horizontal .vbb-item-label,
+#vbb-container.vbb-show-titles.vbb-movable-horizontal .vbb-item-label {
   visibility: visible;
   opacity: 1;
   position: static;
