@@ -344,7 +344,7 @@
     if (isHorizontal()) {
       // ── Horizontal orientation: horizontal sub-drawer strip ──
       subDrawer.classList.add("vbb-sub-drawer-horizontal");
-      if (!settings.movable || isToggleOnTopHalf()) {
+      if (settings.movable ? isToggleOnTopHalf() : settings.barPosition === "top") {
         subDrawer.classList.add("vbb-sub-drawer-top");
         subDrawer.style.top = folderRect.bottom + gap + "px";
         subDrawer.style.bottom = "auto";
@@ -357,7 +357,7 @@
       subDrawer.style.right = window.innerWidth - folderRect.left + gap + "px";
       subDrawer.style.left = "auto";
       subDrawer.style.width = "";
-      subDrawer.style.maxWidth = Math.max(40, folderRect.left - 20) + "px";
+      subDrawer.style.maxWidth = Math.max(40, folderRect.left - 30) + "px";
     } else {
       // ── Vertical orientation: sub-drawer to the side ──
       const opensRight = settings.movable ? isToggleOnLeftSide() : settings.barPosition !== "right";
@@ -371,7 +371,7 @@
         // left set dynamically after drawer opens (see below)
       }
       subDrawer.style.top = folderRect.top + "px";
-      subDrawer.style.maxHeight = window.innerHeight - folderRect.top - 20 + "px";
+      subDrawer.style.maxHeight = window.innerHeight - folderRect.top - 30 + "px";
     }
 
     container.appendChild(subDrawer);
@@ -458,7 +458,19 @@
       container.classList.toggle("vbb-vertical-left", isVert && settings.barPosition === "left");
       container.classList.toggle("vbb-vertical-right", isVert && settings.barPosition === "right");
     }
-    closeAllSubDrawers();
+    // Close folder sub-drawers but keep the settings panel open if it's already open
+    const settingsSubDrawer = subDrawerStack.find((sd) => sd.dataset.folderId === "__settings__");
+    const settingsIdx = subDrawerStack.indexOf(settingsSubDrawer);
+    // Close from the top of the stack down. If settings is in the stack,
+    // close everything above it, then everything below it, but leave settings.
+    if (settingsIdx >= 0) {
+      closeSubDrawersFrom(settingsIdx + 1); // close above settings
+      while (subDrawerStack.length > 1) {
+        closeSubDrawersFrom(0); // close below settings
+      }
+    } else {
+      closeAllSubDrawers();
+    }
   }
 
   function getEffectiveTheme() {
@@ -530,7 +542,7 @@
     applyOrientationClass();
 
     if (isHorizontal()) {
-      // Horizontal: drawer below (or above) toggle
+      // Horizontal: drawer below (or above) toggle, positioned like sub-drawers
       if (isToggleOnTopHalf()) {
         drawer.style.top = tr.bottom + gap + "px";
         drawer.style.bottom = "auto";
@@ -538,9 +550,12 @@
         drawer.style.bottom = window.innerHeight - tr.top + gap + "px";
         drawer.style.top = "auto";
       }
-      drawer.style.left = Math.max(0, tr.left) + "px";
-      drawer.style.right = "auto";
+      // Anchor right edge to the left of the toggle (same as sub-drawers)
+      drawer.style.right = window.innerWidth - tr.left + gap + "px";
+      drawer.style.left = "auto";
+      drawer.style.width = "";
       drawer.style.height = "";
+      drawer.style.maxWidth = Math.max(40, tr.left - 20) + "px";
     } else {
       // Vertical: drawer to the right (or left) of toggle
       drawer.style.top = tr.top + "px";
@@ -608,8 +623,12 @@
   }
 
   function openSettingsPanel() {
+    console.log("Opening settings panel");
+
     // Toggle: if settings panel is already open, close it
     const existingIdx = subDrawerStack.findIndex((sd) => sd.dataset.folderId === "__settings__");
+    console.log("Existing settings panel index:", existingIdx);
+
     if (existingIdx >= 0) {
       closeSubDrawersFrom(existingIdx);
       return;
@@ -625,9 +644,11 @@
     const panelWidth = 170;
     const gap = 8;
 
+    console.log("a");
+
     if (isHorizontal()) {
       // Settings opens below (top bar) or above (bottom bar)
-      if (!settings.movable || isToggleOnTopHalf()) {
+      if (settings.movable ? isToggleOnTopHalf() : settings.barPosition === "top") {
         panel.style.top = drawerRect.bottom + gap + "px";
         panel.style.bottom = "auto";
       } else {
@@ -636,16 +657,12 @@
       }
       panel.style.right = drawerRect.left + 40 + "px";
       panel.style.left = "auto";
-    } else {
-      // Settings opens to the side
-      if (!settings.movable && settings.barPosition === "right") {
+    } else if (settings.barPosition === "left" || settings.barPosition === "right") {
+      // Vertical bar: settings opens to the side
+      if (settings.barPosition === "right") {
         panel.style.left = drawerRect.left - panelWidth - gap + "px";
-      } else if (!settings.movable) {
-        panel.style.left = drawerRect.right + gap + "px";
-      } else if (isToggleOnLeftSide()) {
-        panel.style.left = drawerRect.right + gap + "px";
       } else {
-        panel.style.left = drawerRect.left - panelWidth - gap + "px";
+        panel.style.left = drawerRect.right + gap + "px";
       }
       panel.style.top = drawerRect.top + "px";
       panel.style.bottom = "auto";
@@ -655,10 +672,24 @@
     // panel.style.maxHeight = Math.min(600, window.innerHeight - 60) + "px";
     panel.style.height = "fit-content";
 
+    let x = panel.style;
     container.appendChild(panel);
     void panel.offsetWidth;
     panel.classList.add("open");
     subDrawerStack.push(panel);
+    console.log("panel", {
+      a: settings,
+      1: {
+        display: panel.style.display,
+        top: panel.style.top,
+        left: panel.style.left,
+        right: panel.style.right,
+        bottom: panel.style.bottom,
+        height: panel.style.height,
+        maxHeight: panel.style.maxHeight,
+      },
+      2: { display: x.display, top: x.top, left: x.left, right: x.right, bottom: x.bottom, height: x.height, maxHeight: x.maxHeight },
+    });
 
     renderSettings(panel);
   }
@@ -808,6 +839,8 @@
       titleOptLabels,
       titleOptIcons,
       (value) => {
+        console.log("Show titles:", value);
+
         settings.showTitle = value;
         saveSettings();
         applyShowTitle();
@@ -828,6 +861,8 @@
       movableOptLabels,
       movableOptIcons,
       (value) => {
+        console.log("moveable:", value);
+
         settings.movable = value;
         saveSettings();
         if (value) {
@@ -840,6 +875,10 @@
           initToggleDrag();
           applyOrientationClass();
         } else {
+          // When turning movable off, set bar position to match the orientation
+          settings.barPosition = settings.orientation === "horizontal" ? "top" : "right";
+          saveSettings();
+          applyBarPosition();
           container.classList.remove("vbb-movable");
           container.classList.remove("vbb-movable-vertical");
           container.classList.remove("vbb-movable-horizontal");
@@ -903,28 +942,29 @@
   }
 
   function repositionSettingsPanel(panelEl) {
+    console.log("Repositioning settings panel");
+
     const drawerRect = drawer.getBoundingClientRect();
     const pw = 170;
     const g = 8;
     if (isHorizontal()) {
-      if (!settings.movable || isToggleOnTopHalf()) {
+      if (settings.movable ? isToggleOnTopHalf() : settings.barPosition === "top") {
         panelEl.style.top = drawerRect.bottom + g + "px";
         panelEl.style.bottom = "auto";
+        console.log("1!!", drawerRect.left, drawerRect.right);
       } else {
         panelEl.style.bottom = window.innerHeight - drawerRect.top + g + "px";
         panelEl.style.top = "auto";
+        console.log("2!!", drawerRect.left, drawerRect.right);
       }
-      panelEl.style.left = drawerRect.left + "px";
-      panelEl.style.right = "auto";
-    } else {
-      if (!settings.movable && settings.barPosition === "right") {
+      panelEl.style.right = 50 + "px";
+      panelEl.style.left = "auto";
+    } else if (settings.barPosition === "left" || settings.barPosition === "right") {
+      // Vertical bar: settings opens to the side
+      if (settings.barPosition === "right") {
         panelEl.style.left = drawerRect.left - g - pw + "px";
-      } else if (!settings.movable) {
-        panelEl.style.left = drawerRect.right + g + "px";
-      } else if (isToggleOnLeftSide()) {
-        panelEl.style.left = drawerRect.right + g + "px";
       } else {
-        panelEl.style.left = drawerRect.left - g - pw + "px";
+        panelEl.style.left = drawerRect.right + g + "px";
       }
       panelEl.style.top = drawerRect.top + "px";
       panelEl.style.bottom = "auto";

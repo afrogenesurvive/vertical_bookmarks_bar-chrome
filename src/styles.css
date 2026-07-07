@@ -185,8 +185,8 @@
 /* Non-movable vertical mode: hardcoded positions */
 #vbb-container:not(.vbb-movable).vbb-vertical .vbb-drawer {
   flex-direction: column;
-  top: 50px;
-  height: calc(100vh - 60px);
+  top: 60px;
+  height: calc(100vh - 70px);
   width: 40px;
 }
 
@@ -196,11 +196,10 @@
   width: 40px;
 }
 
-/* Movable horizontal orientation: position set by JS */
+/* Movable horizontal orientation: position & max-width set by JS */
 #vbb-container.vbb-movable.vbb-movable-horizontal .vbb-drawer {
   flex-direction: row;
   width: fit-content;
-  max-width: calc(100vw - 60px);
   height: 40px;
 }
 
@@ -995,10 +994,24 @@
 }
 
 /* ─── Show titles mode ──────────────────────────────────────────── */
-#vbb-container.vbb-show-titles .vbb-drawer,
-#vbb-container.vbb-show-titles .vbb-sub-drawer,
-#vbb-container.vbb-show-titles .vbb-folder-drawer {
+/* Vertical show-titles: wider drawer for readable labels */
+#vbb-container.vbb-show-titles.vbb-vertical .vbb-drawer,
+#vbb-container.vbb-show-titles.vbb-vertical .vbb-sub-drawer,
+#vbb-container.vbb-show-titles.vbb-vertical .vbb-folder-drawer,
+#vbb-container.vbb-show-titles.vbb-movable-vertical .vbb-drawer,
+#vbb-container.vbb-show-titles.vbb-movable-vertical .vbb-sub-drawer,
+#vbb-container.vbb-show-titles.vbb-movable-vertical .vbb-folder-drawer {
   width: 170px !important;
+}
+
+/* Horizontal show-titles: drawer width adapts to content */
+#vbb-container.vbb-show-titles.vbb-horizontal .vbb-drawer,
+#vbb-container.vbb-show-titles.vbb-horizontal .vbb-sub-drawer,
+#vbb-container.vbb-show-titles.vbb-horizontal .vbb-folder-drawer,
+#vbb-container.vbb-show-titles.vbb-movable-horizontal .vbb-drawer,
+#vbb-container.vbb-show-titles.vbb-movable-horizontal .vbb-sub-drawer,
+#vbb-container.vbb-show-titles.vbb-movable-horizontal .vbb-folder-drawer {
+  width: auto;
 }
 
 /* In horizontal show-titles mode, labels are always visible */
@@ -1052,7 +1065,7 @@
 /* Sub-drawers in horizontal mode: reverse row so newest items appear left of the gear */
 #vbb-container.vbb-horizontal .vbb-sub-drawer {
   width: auto;
-  min-width: 42px;
+  min-width: 50px;
   display: none;
   flex-direction: row-reverse;
   flex-wrap: nowrap;
