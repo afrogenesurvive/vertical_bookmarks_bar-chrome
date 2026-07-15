@@ -24,6 +24,7 @@
     toggleY: null, // px, CSS top position of toggle (set by drag or default)
     accentEnabled: false,
     accentColor: "#3b82f6",
+    opacity: 1.0, // 0.0 – 1.0, background opacity for toggle & drawers
     subDrawerMode: "branch", // 'branch' | 'root'
   };
   let systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
@@ -142,6 +143,7 @@
     applyTheme();
     applyShowTitle();
     applyFontSize();
+    applyOpacity();
   });
 
   // ─── Listen for messages from background ────────────────────────────────
@@ -195,7 +197,7 @@
     drawer.classList.add("open");
     toggle.classList.add("active");
     // Match toggle height to drawer height so they form a continuous side panel
-    toggle.style.height = drawer.offsetHeight + "px";
+    // toggle.style.height = drawer.offsetHeight + "px";
     loadBookmarksBar();
   }
 
@@ -595,6 +597,10 @@
       container.classList.remove("vbb-accent-on");
       container.style.removeProperty("--vbb-accent");
     }
+  }
+
+  function applyOpacity() {
+    container.style.setProperty("--vbb-bg-opacity", settings.opacity);
   }
 
   // ─── Toggle position (movable only) ────────────────────────────────────
@@ -1061,6 +1067,38 @@
         renderSettings(container);
       },
     );
+
+    // ── Background Opacity (slider) ──
+    const opacityRow = document.createElement("div");
+    opacityRow.className = "vbb-settings-item";
+    opacityRow.style.cursor = "default";
+    opacityRow.innerHTML =
+      '<span class="vbb-settings-icon"><i class="fa-solid fa-eye"></i></span>' +
+      '<span class="vbb-settings-label">Opacity</span>' +
+      '<span class="vbb-settings-value">' +
+      Math.round(settings.opacity * 100) +
+      "%</span>";
+    container.appendChild(opacityRow);
+
+    const sliderWrap = document.createElement("div");
+    sliderWrap.style.cssText = "display: flex; align-items: center; padding: 2px 12px 10px;";
+    const slider = document.createElement("input");
+    slider.type = "range";
+    slider.min = "0.2";
+    slider.max = "1";
+    slider.step = "0.05";
+    slider.value = settings.opacity;
+    slider.className = "vbb-opacity-slider";
+    slider.addEventListener("input", (e) => {
+      const val = parseFloat(e.target.value);
+      settings.opacity = val;
+      saveSettings();
+      applyOpacity();
+      const valSpan = opacityRow.querySelector(".vbb-settings-value");
+      if (valSpan) valSpan.textContent = Math.round(val * 100) + "%";
+    });
+    sliderWrap.appendChild(slider);
+    container.appendChild(sliderWrap);
 
     // ── Accent On/Off ──
     const accentOptLabels = { true: "On", false: "Off" };

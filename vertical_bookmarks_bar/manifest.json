@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "description": "A floating vertical bookmarks bar with icon-only items and folder navigation.",
   "permissions": ["bookmarks", "favicon", "activeTab", "scripting", "storage"],
-  "host_permissions": ["*://*/*", "chrome://newtab/"],
+  "host_permissions": ["*://*/*"],
   "background": {
     "service_worker": "src/background.js"
   },
@@ -22,8 +22,10 @@
     "48": "src/icons/icon48.png",
     "128": "src/icons/icon128.png"
   },
-  "web_accessible_resources": [{
-    "resources": ["src/fontawesome/*"],
-    "matches": ["<all_urls>"]
-  }]
+  "web_accessible_resources": [
+    {
+      "resources": ["src/fontawesome/*"],
+      "matches": ["<all_urls>"]
+    }
+  ]
 }
