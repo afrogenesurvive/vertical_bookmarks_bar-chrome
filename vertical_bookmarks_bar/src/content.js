@@ -18,10 +18,13 @@
     theme: "dark", // 'dark' | 'light' | 'system'
     showTitle: false,
     fontSize: 13, // px, base font size for all text
-    movable: false, // whether the toggle can be dragged
+    movable: true, // whether the toggle can be dragged
     orientation: "vertical", // 'vertical' | 'horizontal' (only when movable)
     toggleX: null, // px, CSS left position of toggle (set by drag or default)
     toggleY: null, // px, CSS top position of toggle (set by drag or default)
+    accentEnabled: false,
+    accentColor: "#3b82f6",
+    subDrawerMode: "branch", // 'branch' | 'root'
   };
   let systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
 
@@ -70,11 +73,10 @@
     return [];
   }
 
-  // ─── Inject Font Awesome (with fallback) ────────────────────────────────
+  // ─── Inject Font Awesome (bundled locally to avoid CSP issues) ─────────
   const faLink = document.createElement("link");
   faLink.rel = "stylesheet";
-  faLink.href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css";
-  faLink.onerror = () => console.warn("VBB: Font Awesome failed to load");
+  faLink.href = chrome.runtime.getURL("src/fontawesome/all.min.css");
   document.head.appendChild(faLink);
 
   // ─── Create UI elements ──────────────────────────────────────────────────
@@ -136,6 +138,7 @@
       container.classList.add("vbb-movable");
       applyOrientationClass();
     }
+    applyAccent();
     applyTheme();
     applyShowTitle();
     applyFontSize();
@@ -191,6 +194,8 @@
     positionDrawer();
     drawer.classList.add("open");
     toggle.classList.add("active");
+    // Match toggle height to drawer height so they form a continuous side panel
+    toggle.style.height = drawer.offsetHeight + "px";
     loadBookmarksBar();
   }
 
@@ -198,6 +203,7 @@
     isDrawerOpen = false;
     drawer.classList.remove("open");
     toggle.classList.remove("active");
+    toggle.style.height = "";
     closeAllSubDrawers();
   }
 
@@ -339,6 +345,48 @@
     const subDrawer = document.createElement("div");
     subDrawer.className = "vbb-sub-drawer vbb-folder-drawer";
     subDrawer.dataset.folderId = item.id;
+
+    // Position based on sub-drawer mode
+    if (settings.subDrawerMode === "root") {
+      positionSubDrawerRoot(subDrawer);
+    } else {
+      positionSubDrawerBranch(subDrawer, folderEl);
+    }
+
+    container.appendChild(subDrawer);
+
+    // Load and render contents
+    subDrawer.innerHTML = '<div class="vbb-loading">Loading</div>';
+    chrome.runtime.sendMessage({ action: "getFolderContents", folderId: item.id }, (response) => {
+      if (response && response.items) {
+        if (response.items.length === 0) {
+          subDrawer.innerHTML = '<div class="vbb-error">Empty folder</div>';
+        } else {
+          renderItems(response.items, subDrawer);
+        }
+      } else {
+        subDrawer.innerHTML = '<div class="vbb-error">Error loading</div>';
+      }
+    });
+
+    void subDrawer.offsetWidth;
+    subDrawer.classList.add("open");
+
+    // Dynamically position right-side sub-drawers based on actual rendered width (branch mode only)
+    if (settings.subDrawerMode !== "root" && !isHorizontal()) {
+      const gap = 8;
+      const opensRight = settings.movable ? isToggleOnLeftSide() : settings.barPosition !== "right";
+      if (!opensRight) {
+        subDrawer.style.left = folderRect.left - gap - subDrawer.offsetWidth + "px";
+      }
+    }
+
+    folderEl.classList.add("vbb-folder-open");
+    subDrawerStack.push(subDrawer);
+  }
+
+  function positionSubDrawerBranch(subDrawer, folderEl) {
+    const folderRect = folderEl.getBoundingClientRect();
     const gap = 8;
 
     if (isHorizontal()) {
@@ -380,36 +428,74 @@
       subDrawer.style.top = folderRect.top + "px";
       subDrawer.style.maxHeight = window.innerHeight - folderRect.top - 30 + "px";
     }
+  }
 
-    container.appendChild(subDrawer);
+  function positionSubDrawerRoot(subDrawer) {
+    // In root mode, stack sub-drawers by positioning relative to the
+    // last open sub-drawer (or the toggle if none are open yet).
+    let referenceEl = toggle;
+    if (subDrawerStack.length > 0) {
+      referenceEl = subDrawerStack[subDrawerStack.length - 1];
+    }
+    const refRect = referenceEl.getBoundingClientRect();
+    const gap = 8;
 
-    // Load and render contents
-    subDrawer.innerHTML = '<div class="vbb-loading">Loading</div>';
-    chrome.runtime.sendMessage({ action: "getFolderContents", folderId: item.id }, (response) => {
-      if (response && response.items) {
-        if (response.items.length === 0) {
-          subDrawer.innerHTML = '<div class="vbb-error">Empty folder</div>';
-        } else {
-          renderItems(response.items, subDrawer);
-        }
+    if (isHorizontal()) {
+      subDrawer.classList.add("vbb-sub-drawer-horizontal");
+      if (settings.movable ? isToggleOnTopHalf() : settings.barPosition === "top") {
+        subDrawer.style.top = refRect.bottom + gap + "px";
+        subDrawer.style.bottom = "auto";
       } else {
-        subDrawer.innerHTML = '<div class="vbb-error">Error loading</div>';
+        subDrawer.style.bottom = window.innerHeight - refRect.top + gap + "px";
+        subDrawer.style.top = "auto";
       }
-    });
-
-    void subDrawer.offsetWidth;
-    subDrawer.classList.add("open");
-
-    // Dynamically position right-side sub-drawers based on actual rendered width
-    if (!isHorizontal()) {
+      subDrawer.style.width = "";
+      // In root mode, always use the toggle as the horizontal reference
+      // so all sub-drawers share the same horizontal origin (the main drawer's edge).
+      // Vertical position still cascades (each below the previous via refRect).
+      const toggleRect = toggle.getBoundingClientRect();
+      if (settings.movable && isToggleOnLeftSide()) {
+        subDrawer.style.left = toggleRect.right + gap + "px";
+        subDrawer.style.right = "auto";
+        subDrawer.style.maxWidth = Math.max(40, window.innerWidth - toggleRect.right - 30) + "px";
+      } else {
+        subDrawer.style.right = window.innerWidth - toggleRect.left + gap + "px";
+        subDrawer.style.left = "auto";
+        subDrawer.style.maxWidth = Math.max(40, toggleRect.left - 30) + "px";
+      }
+    } else {
+      // Vertical: position relative to reference element
       const opensRight = settings.movable ? isToggleOnLeftSide() : settings.barPosition !== "right";
-      if (!opensRight) {
-        subDrawer.style.left = folderRect.left - gap - subDrawer.offsetWidth + "px";
+      // For the first sub-drawer in root mode, position relative to the drawer's edge
+      // (not the toggle's edge) so it doesn't overlap with the main drawer.
+      // Deeper sub-drawers cascade from the previous sub-drawer's edge.
+      if (referenceEl === toggle) {
+        const drawerRect = drawer.getBoundingClientRect();
+        if (opensRight) {
+          subDrawer.classList.add("vbb-sub-drawer-left");
+          subDrawer.style.left = drawerRect.right + gap + "px";
+          subDrawer.style.right = "auto";
+        } else {
+          subDrawer.classList.add("vbb-sub-drawer-right");
+          subDrawer.style.right = window.innerWidth - drawerRect.left + gap + "px";
+          subDrawer.style.left = "auto";
+        }
+        subDrawer.style.top = drawerRect.top + "px";
+        subDrawer.style.maxHeight = window.innerHeight - drawerRect.top - 30 + "px";
+      } else {
+        if (opensRight) {
+          subDrawer.classList.add("vbb-sub-drawer-left");
+          subDrawer.style.left = refRect.right + gap + "px";
+          subDrawer.style.right = "auto";
+        } else {
+          subDrawer.classList.add("vbb-sub-drawer-right");
+          subDrawer.style.right = window.innerWidth - refRect.left + gap + "px";
+          subDrawer.style.left = "auto";
+        }
+        subDrawer.style.top = refRect.top + "px";
+        subDrawer.style.maxHeight = window.innerHeight - refRect.top - 30 + "px";
       }
     }
-
-    folderEl.classList.add("vbb-folder-open");
-    subDrawerStack.push(subDrawer);
   }
 
   // ─── Sub-drawer stack management ─────────────────────────────────────────
@@ -499,6 +585,16 @@
 
   function applyFontSize() {
     container.style.setProperty("--vbb-font-size", settings.fontSize + "px");
+  }
+
+  function applyAccent() {
+    if (settings.accentEnabled) {
+      container.style.setProperty("--vbb-accent", settings.accentColor);
+      container.classList.add("vbb-accent-on");
+    } else {
+      container.classList.remove("vbb-accent-on");
+      container.style.removeProperty("--vbb-accent");
+    }
   }
 
   // ─── Toggle position (movable only) ────────────────────────────────────
@@ -900,12 +996,16 @@
           // When turning movable off, set bar position to match the orientation
           settings.barPosition = settings.orientation === "horizontal" ? "top" : "right";
           saveSettings();
-          applyBarPosition();
+          // Remove movable classes FIRST so non-movable CSS takes effect immediately
           container.classList.remove("vbb-movable");
           container.classList.remove("vbb-movable-vertical");
           container.classList.remove("vbb-movable-horizontal");
+          // Then apply bar position (non-movable CSS selectors now match)
+          applyBarPosition();
+          // Clear inline position styles last
           toggle.style.top = "";
           toggle.style.right = "";
+          toggle.style.bottom = "";
           toggle.style.left = "";
         }
         closeAllSubDrawers();
@@ -958,6 +1058,134 @@
         saveSettings();
         applyFontSize();
         repositionSettingsPanel(container);
+        renderSettings(container);
+      },
+    );
+
+    // ── Accent On/Off ──
+    const accentOptLabels = { true: "On", false: "Off" };
+    const accentOptIcons = { true: "fa-check-circle", false: "fa-circle" };
+
+    addAccordionSection(
+      "Accent",
+      "fa-palette",
+      settings.accentEnabled,
+      accentOptLabels[settings.accentEnabled],
+      [true, false],
+      accentOptLabels,
+      accentOptIcons,
+      (value) => {
+        settings.accentEnabled = value;
+        saveSettings();
+        applyAccent();
+        renderSettings(container);
+      },
+    );
+
+    // ── Accent color picker (collapsible accordion, only shown when accent is on) ──
+    if (settings.accentEnabled) {
+      const colorHeader = document.createElement("div");
+      colorHeader.className = "vbb-settings-item";
+      colorHeader.innerHTML =
+        '<span class="vbb-settings-icon"><i class="fa-solid fa-droplet"></i></span>' +
+        '<span class="vbb-settings-label">Color</span>' +
+        '<span class="vbb-settings-chevron"><i class="fa-solid fa-chevron-down"></i></span>';
+
+      const colors = ["#3b82f6", "#ef4444", "#22c55e", "#a855f7", "#f97316", "#ec4899", "#14b8a6", "#eab308"];
+
+      const colorBody = document.createElement("div");
+      colorBody.className = "vbb-settings-accordion-body";
+      colorBody._accordionHeader = colorHeader;
+
+      const swatchGrid = document.createElement("div");
+      swatchGrid.style.cssText = "display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 4px 8px;";
+
+      colors.forEach((c) => {
+        const swatch = document.createElement("div");
+        swatch.className = "vbb-swatch";
+        const isSelected = c === settings.accentColor;
+        swatch.style.cssText =
+          "width: 28px; height: 28px; border-radius: 6px; background: " +
+          c +
+          "; cursor: pointer; border: 2px solid " +
+          (isSelected ? "var(--vbb-text)" : "transparent") +
+          "; transition: transform 0.1s, border-color 0.1s;";
+        swatch.title = c;
+        swatch.addEventListener("click", (e) => {
+          e.stopPropagation();
+          settings.accentColor = c;
+          saveSettings();
+          applyAccent();
+          renderSettings(container);
+        });
+        swatchGrid.appendChild(swatch);
+      });
+
+      // Custom color input
+      const customRow = document.createElement("div");
+      customRow.style.cssText = "display: flex; align-items: center; gap: 6px; padding: 4px 8px 6px;";
+      const customLabel = document.createElement("span");
+      customLabel.className = "vbb-settings-label";
+      customLabel.textContent = "Custom";
+      customLabel.style.fontSize = "calc(var(--vbb-font-size, 13px) - 2px)";
+      const customInput = document.createElement("input");
+      customInput.type = "color";
+      customInput.value = settings.accentColor;
+      customInput.style.cssText = "width: 28px; height: 28px; border: none; border-radius: 6px; cursor: pointer; padding: 0; background: none;";
+      customInput.addEventListener("input", (e) => {
+        e.stopPropagation();
+      });
+      customInput.addEventListener("change", (e) => {
+        e.stopPropagation();
+        settings.accentColor = e.target.value;
+        saveSettings();
+        applyAccent();
+        renderSettings(container);
+      });
+      customRow.appendChild(customLabel);
+      customRow.appendChild(customInput);
+
+      colorBody.appendChild(swatchGrid);
+      colorBody.appendChild(customRow);
+
+      // Toggle accordion, integrated with existing openSection system
+      colorHeader.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (openSection === colorBody) {
+          colorBody.classList.remove("open");
+          colorHeader.classList.remove("vbb-settings-open");
+          openSection = null;
+        } else {
+          if (openSection) {
+            openSection.classList.remove("open");
+            const prevHeader = openSection._accordionHeader;
+            if (prevHeader) prevHeader.classList.remove("vbb-settings-open");
+          }
+          colorBody.classList.add("open");
+          colorHeader.classList.add("vbb-settings-open");
+          openSection = colorBody;
+        }
+      });
+
+      container.appendChild(colorHeader);
+      container.appendChild(colorBody);
+    }
+
+    // ── Sub-drawer mode ──
+    const subModeLabels = { branch: "Branch", root: "Root" };
+    const subModeIcons = { branch: "fa-sitemap", root: "fa-location-dot" };
+
+    addAccordionSection(
+      "Sub-drawer",
+      subModeIcons[settings.subDrawerMode],
+      settings.subDrawerMode,
+      subModeLabels[settings.subDrawerMode],
+      ["branch", "root"],
+      subModeLabels,
+      subModeIcons,
+      (value) => {
+        settings.subDrawerMode = value;
+        saveSettings();
         renderSettings(container);
       },
     );

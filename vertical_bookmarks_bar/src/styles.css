@@ -108,8 +108,8 @@
 #vbb-toggle.active {
   background: var(--vbb-hover);
   color: var(--vbb-text);
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 1px #3b82f6;
+  border-color: var(--vbb-text-muted);
+  box-shadow: 0 0 0 1px var(--vbb-border);
 }
 
 #vbb-toggle i {
@@ -155,8 +155,8 @@
   color: var(--vbb-text-muted, #a1a1aa);
   border-radius: 5px;
   transition:
-    background 0.1s,
-    color 0.1s;
+    background 0var(--vbb-text-muted);
+  box-shadow: 0 0 0 1px var(--vbb-border)
   font-size: 12px;
   flex-shrink: 0;
 }
@@ -262,7 +262,8 @@
 
 /* Sub-drawers also flow left-to-right when drawer extends right */
 #vbb-container.vbb-movable.vbb-movable-horizontal.vbb-horizontal-drawer-right .vbb-sub-drawer-top,
-#vbb-container.vbb-movable.vbb-movable-horizontal.vbb-horizontal-drawer-right .vbb-sub-drawer-bottom {
+#vbb-container.vbb-movable.vbb-movable-horizontal.vbb-horizontal-drawer-right .vbb-sub-drawer-bottom,
+#vbb-container.vbb-movable.vbb-movable-horizontal.vbb-horizontal-drawer-right .vbb-sub-drawer-horizontal {
   flex-direction: row;
 }
 
@@ -678,6 +679,38 @@
   display: flex;
 }
 
+/* ─── Horizontal sub-drawer (root mode): items in a row, horizontal scroll ── */
+.vbb-sub-drawer.vbb-sub-drawer-horizontal {
+  display: flex;
+  flex-direction: row-reverse;
+  flex-wrap: nowrap;
+  align-items: center;
+  height: 40px;
+  width: auto;
+  min-width: 40px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 2px 0;
+  gap: 2px;
+}
+
+.vbb-sub-drawer.vbb-sub-drawer-horizontal .vbb-item {
+  width: auto;
+  height: 34px;
+  padding: 0 4px;
+  flex-shrink: 0;
+}
+
+.vbb-sub-drawer.vbb-sub-drawer-horizontal .vbb-item-label {
+  left: 50%;
+  top: 100%;
+  transform: translateX(-50%) translateY(4px);
+}
+
+.vbb-sub-drawer.vbb-sub-drawer-horizontal.open {
+  display: flex;
+}
+
 /* ─── Left bar sub-drawer: items stacked vertically ──────────── */
 .vbb-sub-drawer.vbb-sub-drawer-left {
   display: flex;
@@ -952,8 +985,8 @@
 #vbb-container.vbb-light #vbb-toggle.active {
   background: var(--vbb-hover);
   color: var(--vbb-text);
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 1px #3b82f6;
+  border-color: var(--vbb-text-muted);
+  box-shadow: 0 0 0 1px var(--vbb-border);
 }
 
 #vbb-container.vbb-light .vbb-drawer-header {
@@ -1038,6 +1071,109 @@
 
 #vbb-container.vbb-light .vbb-settings-accordion-body {
   background: var(--vbb-surface);
+}
+
+/* ─── Accent color overrides ──────────────────────────────────── */
+#vbb-container.vbb-accent-on #vbb-toggle {
+  border-color: var(--vbb-accent);
+  box-shadow: 0 0 0 1px var(--vbb-accent);
+}
+
+#vbb-container.vbb-accent-on #vbb-toggle.active {
+  border-color: var(--vbb-accent);
+  box-shadow: 0 0 0 1px var(--vbb-accent);
+}
+
+#vbb-container.vbb-accent-on #vbb-toggle i {
+  color: var(--vbb-accent);
+}
+
+#vbb-container.vbb-accent-on .vbb-drawer,
+#vbb-container.vbb-accent-on .vbb-sub-drawer {
+  border-color: var(--vbb-accent);
+}
+
+#vbb-container.vbb-accent-on .vbb-settings-option-item .vbb-settings-value {
+  color: var(--vbb-accent);
+}
+
+#vbb-container.vbb-accent-on .vbb-expand-icon {
+  color: var(--vbb-accent);
+}
+
+#vbb-container.vbb-accent-on .vbb-settings-btn {
+  color: var(--vbb-accent);
+}
+
+#vbb-container.vbb-accent-on .vbb-settings-btn:hover {
+  color: var(--vbb-accent);
+}
+
+#vbb-container.vbb-accent-on .vbb-folder.vbb-folder-open {
+  background: color-mix(in srgb, var(--vbb-accent) 12%, transparent);
+}
+
+#vbb-container.vbb-accent-on .vbb-settings-icon {
+  color: var(--vbb-accent);
+}
+
+#vbb-container.vbb-accent-on .vbb-items::-webkit-scrollbar-thumb,
+#vbb-container.vbb-accent-on .vbb-sub-drawer::-webkit-scrollbar-thumb {
+  background: var(--vbb-accent);
+}
+
+/* ─── Light theme accent overrides ──────────────────────────────── */
+#vbb-container.vbb-light.vbb-accent-on #vbb-toggle {
+  border-color: var(--vbb-accent);
+  box-shadow: 0 0 0 1px var(--vbb-accent);
+}
+
+#vbb-container.vbb-light.vbb-accent-on #vbb-toggle.active {
+  border-color: var(--vbb-accent);
+  box-shadow: 0 0 0 1px var(--vbb-accent);
+}
+
+#vbb-container.vbb-light.vbb-accent-on #vbb-toggle i {
+  color: var(--vbb-accent);
+}
+
+#vbb-container.vbb-light.vbb-accent-on .vbb-drawer,
+#vbb-container.vbb-light.vbb-accent-on .vbb-sub-drawer {
+  border-color: var(--vbb-accent);
+}
+
+#vbb-container.vbb-light.vbb-accent-on .vbb-settings-option-item .vbb-settings-value {
+  color: var(--vbb-accent);
+}
+
+#vbb-container.vbb-light.vbb-accent-on .vbb-expand-icon {
+  color: var(--vbb-accent);
+}
+
+#vbb-container.vbb-light.vbb-accent-on .vbb-settings-btn {
+  color: var(--vbb-accent);
+}
+
+#vbb-container.vbb-light.vbb-accent-on .vbb-settings-btn:hover {
+  color: var(--vbb-accent);
+}
+
+#vbb-container.vbb-light.vbb-accent-on .vbb-folder.vbb-folder-open {
+  background: color-mix(in srgb, var(--vbb-accent) 10%, transparent);
+}
+
+#vbb-container.vbb-light.vbb-accent-on .vbb-settings-icon {
+  color: var(--vbb-accent);
+}
+
+#vbb-container.vbb-light.vbb-accent-on .vbb-items::-webkit-scrollbar-thumb,
+#vbb-container.vbb-light.vbb-accent-on .vbb-sub-drawer::-webkit-scrollbar-thumb {
+  background: var(--vbb-accent);
+}
+
+/* ─── Accent color swatches ──────────────────────────────────── */
+.vbb-swatch:hover {
+  transform: scale(1.15);
 }
 
 /* ─── Show titles mode ──────────────────────────────────────────── */
