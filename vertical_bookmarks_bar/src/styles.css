@@ -255,6 +255,24 @@
   min-width: 0;
 }
 
+/* Drawer extends right (toggle on left half) → items flow left-to-right so first bookmark is closest to toggle */
+#vbb-container.vbb-movable.vbb-movable-horizontal.vbb-horizontal-drawer-right .vbb-items {
+  flex-direction: row;
+}
+
+/* Sub-drawers also flow left-to-right when drawer extends right */
+#vbb-container.vbb-movable.vbb-movable-horizontal.vbb-horizontal-drawer-right .vbb-sub-drawer-top,
+#vbb-container.vbb-movable.vbb-movable-horizontal.vbb-horizontal-drawer-right .vbb-sub-drawer-bottom {
+  flex-direction: row;
+}
+
+/* Header moves to the left of items when drawer extends right */
+#vbb-container.vbb-movable.vbb-movable-horizontal.vbb-horizontal-drawer-right .vbb-drawer-header {
+  order: 0;
+  border-left: none;
+  border-right: 1px solid var(--vbb-border, #27272a);
+}
+
 #vbb-container.vbb-movable.vbb-movable-horizontal .vbb-item {
   width: auto;
   height: 34px;

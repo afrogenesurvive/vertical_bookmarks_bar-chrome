@@ -353,11 +353,18 @@
         subDrawer.style.bottom = window.innerHeight - folderRect.top + gap + "px";
         subDrawer.style.top = "auto";
       }
-      // Anchor right edge left of the folder to create a gap between them
-      subDrawer.style.right = window.innerWidth - folderRect.left + gap + "px";
-      subDrawer.style.left = "auto";
       subDrawer.style.width = "";
-      subDrawer.style.maxWidth = Math.max(40, folderRect.left - 30) + "px";
+      if (settings.movable && isToggleOnLeftSide()) {
+        // Drawer extends right → sub-drawer opens to the RIGHT of folder
+        subDrawer.style.left = folderRect.right + gap + "px";
+        subDrawer.style.right = "auto";
+        subDrawer.style.maxWidth = Math.max(40, window.innerWidth - folderRect.right - 30) + "px";
+      } else {
+        // Drawer extends left → sub-drawer opens to the LEFT of folder (existing)
+        subDrawer.style.right = window.innerWidth - folderRect.left + gap + "px";
+        subDrawer.style.left = "auto";
+        subDrawer.style.maxWidth = Math.max(40, folderRect.left - 30) + "px";
+      }
     } else {
       // ── Vertical orientation: sub-drawer to the side ──
       const opensRight = settings.movable ? isToggleOnLeftSide() : settings.barPosition !== "right";
@@ -545,12 +552,23 @@
       // Horizontal: vertically align drawer with toggle (same top edge)
       drawer.style.top = tr.top + "px";
       drawer.style.bottom = "auto";
-      // Anchor right edge to the left of the toggle
-      drawer.style.right = window.innerWidth - tr.left + gap + "px";
-      drawer.style.left = "auto";
       drawer.style.width = "";
       drawer.style.height = "";
-      drawer.style.maxWidth = Math.max(40, tr.left - 20) + "px";
+
+      const onLeftSide = isToggleOnLeftSide();
+      container.classList.toggle("vbb-horizontal-drawer-right", onLeftSide);
+
+      if (onLeftSide) {
+        // Toggle on left half → drawer extends RIGHT
+        drawer.style.left = tr.right + gap + "px";
+        drawer.style.right = "auto";
+        drawer.style.maxWidth = Math.max(40, window.innerWidth - tr.right - 20) + "px";
+      } else {
+        // Toggle on right half → drawer extends LEFT (existing behavior)
+        drawer.style.right = window.innerWidth - tr.left + gap + "px";
+        drawer.style.left = "auto";
+        drawer.style.maxWidth = Math.max(40, tr.left - 20) + "px";
+      }
     } else {
       // Vertical: drawer to the right (or left) of toggle
       drawer.style.top = tr.top + "px";
@@ -651,17 +669,25 @@
         panel.style.bottom = window.innerHeight - drawerRect.top + gap + "px";
         panel.style.top = "auto";
       }
-      panel.style.right = drawerRect.left + 40 + "px";
-      panel.style.left = "auto";
-    } else if (settings.barPosition === "left" || settings.barPosition === "right") {
-      // Vertical bar: settings opens to the side
-      if (settings.barPosition === "right") {
-        panel.style.left = drawerRect.left - panelWidth - gap + "px";
+      // Horizontal position: mirror based on toggle side
+      if (settings.movable && isToggleOnLeftSide()) {
+        panel.style.left = drawerRect.left + "px";
+        panel.style.right = "auto";
       } else {
+        panel.style.left = Math.max(0, drawerRect.right - panelWidth - gap) + "px";
+        panel.style.right = "auto";
+      }
+    } else {
+      // Vertical: determine side based on actual toggle position (movable-aware)
+      const opensRight = settings.movable ? isToggleOnLeftSide() : settings.barPosition !== "right";
+      if (opensRight) {
         panel.style.left = drawerRect.right + gap + "px";
+      } else {
+        panel.style.left = drawerRect.left - panelWidth - gap + "px";
       }
       panel.style.top = drawerRect.top + "px";
       panel.style.bottom = "auto";
+      panel.style.right = "auto";
     }
 
     // Same max-height for both modes so settings content fits regardless of bar height
@@ -953,14 +979,21 @@
         panelEl.style.top = "auto";
         console.log("2!!", drawerRect.left, drawerRect.right);
       }
-      panelEl.style.right = 50 + "px";
-      panelEl.style.left = "auto";
-    } else if (settings.barPosition === "left" || settings.barPosition === "right") {
-      // Vertical bar: settings opens to the side
-      if (settings.barPosition === "right") {
-        panelEl.style.left = drawerRect.left - g - pw + "px";
+      // Horizontal position: mirror based on toggle side
+      if (settings.movable && isToggleOnLeftSide()) {
+        panelEl.style.left = drawerRect.left + "px";
+        panelEl.style.right = "auto";
       } else {
+        panelEl.style.left = Math.max(0, drawerRect.right - 40) + "px";
+        panelEl.style.right = "auto";
+      }
+    } else {
+      // Vertical: determine side based on actual toggle position (movable-aware)
+      const opensRight = settings.movable ? isToggleOnLeftSide() : settings.barPosition !== "right";
+      if (opensRight) {
         panelEl.style.left = drawerRect.right + g + "px";
+      } else {
+        panelEl.style.left = drawerRect.left - g - pw + "px";
       }
       panelEl.style.top = drawerRect.top + "px";
       panelEl.style.bottom = "auto";
