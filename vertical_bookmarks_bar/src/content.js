@@ -542,15 +542,10 @@
     applyOrientationClass();
 
     if (isHorizontal()) {
-      // Horizontal: drawer below (or above) toggle, positioned like sub-drawers
-      if (isToggleOnTopHalf()) {
-        drawer.style.top = tr.bottom + gap + "px";
-        drawer.style.bottom = "auto";
-      } else {
-        drawer.style.bottom = window.innerHeight - tr.top + gap + "px";
-        drawer.style.top = "auto";
-      }
-      // Anchor right edge to the left of the toggle (same as sub-drawers)
+      // Horizontal: vertically align drawer with toggle (same top edge)
+      drawer.style.top = tr.top + "px";
+      drawer.style.bottom = "auto";
+      // Anchor right edge to the left of the toggle
       drawer.style.right = window.innerWidth - tr.left + gap + "px";
       drawer.style.left = "auto";
       drawer.style.width = "";
@@ -566,8 +561,9 @@
         drawer.style.left = tr.right + gap + "px";
         drawer.style.right = "auto";
       } else {
-        drawer.style.left = tr.left - 44 + "px";
-        drawer.style.right = "auto";
+        // Anchor right edge to left of toggle — naturally handles any drawer width
+        drawer.style.right = window.innerWidth - tr.left + gap + "px";
+        drawer.style.left = "auto";
       }
     }
   }
