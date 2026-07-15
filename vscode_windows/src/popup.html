@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VS Code Windows</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header>
+        <h1><span class="icon">&#x2301;</span> Windows</h1>
+        <div class="header-actions">
+          <button id="openPanelBtn" class="btn btn-accent" title="Open layout editor">&#x25A6; Layout</button>
+          <button id="newWinBtn" class="btn" title="New window">+ New</button>
+        </div>
+      </header>
+
+      <!-- ─── Layout presets (quick) ──────────────────────────── -->
+      <div class="quick-presets">
+        <button class="preset-btn" data-layout="grid" title="Grid">&#x25A6; Grid</button>
+        <button class="preset-btn" data-layout="side-by-side" title="Side by side">&#x25A4; Side</button>
+        <button class="preset-btn" data-layout="stacked" title="Stacked">&#x25AE; Stack</button>
+        <button class="preset-btn" data-layout="focus+sidebar" title="Focus + sidebar">&#x25A5; Focus</button>
+      </div>
+
+      <!-- ─── Quick window list ──────────────────────────────── -->
+      <div class="section-label">Open windows</div>
+      <div id="windowList" class="window-list">
+        <div class="loading">Loading...</div>
+      </div>
+
+      <div class="footer">
+        <span class="footer-hint">Open the Layout panel for resize &amp; drag-to-swap</span>
+      </div>
+    </div>
+    <script src="popup.js"></script>
+  </body>
+</html>

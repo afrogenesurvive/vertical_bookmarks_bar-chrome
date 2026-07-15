@@ -1,0 +1,59 @@
+{
+  "manifest_version": 3,
+  "name": "VS Code Windows",
+  "version": "1.0.0",
+  "description": "Arrange, resize, and manage Chrome windows like VS Code editor groups — with splitters, drag-to-swap, and layout presets.",
+  "permissions": ["tabs", "tabGroups", "windows", "storage", "commands", "system.display", "sidePanel"],
+  "side_panel": {
+    "default_path": "src/panel.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["src/content.js"],
+      "run_at": "document_end"
+    }
+  ],
+  "background": {
+    "service_worker": "src/background.js"
+  },
+  "action": {
+    "default_popup": "src/popup.html",
+    "default_title": "VS Code Windows"
+  },
+  "commands": {
+    "tile-windows": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+T",
+        "mac": "Command+Shift+T"
+      },
+      "description": "Arrange windows in a grid"
+    },
+    "snap-left": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+Left",
+        "mac": "Command+Shift+Left"
+      },
+      "description": "Snap current window to left half"
+    },
+    "snap-right": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+Right",
+        "mac": "Command+Shift+Right"
+      },
+      "description": "Snap current window to right half"
+    },
+    "toggle-window-overview": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+O",
+        "mac": "Command+Shift+O"
+      },
+      "description": "Toggle window overview"
+    }
+  },
+  "icons": {
+    "16": "src/icons/icon16.png",
+    "48": "src/icons/icon48.png",
+    "128": "src/icons/icon128.png"
+  }
+}
