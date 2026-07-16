@@ -579,6 +579,16 @@
     const effective = getEffectiveTheme();
     container.classList.toggle("vbb-light", effective === "light");
     container.classList.toggle("vbb-dark", effective === "dark");
+    notifyBackgroundTheme(effective);
+  }
+
+  // Tell the background service worker which icon theme to use for the toolbar
+  function notifyBackgroundTheme(effectiveTheme) {
+    try {
+      chrome.runtime.sendMessage({ action: "themeChanged", theme: effectiveTheme });
+    } catch (_) {
+      // Silently skip if extension context is unavailable
+    }
   }
 
   function applyShowTitle() {

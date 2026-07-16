@@ -1,6 +1,33 @@
 // Background service worker for Vertical Bookmarks Bar
 // Handles Chrome Bookmarks API requests and toolbar icon clicks
 
+// ─── Theme-based toolbar icon ─────────────────────────────────────────────
+// Dark icon (for light Chrome toolbar) — dark Material bookmark ribbon
+const ICON_DARK = "src/icons/icon.svg";
+// Light icon (for dark Chrome toolbar) — white Material bookmark ribbon
+const ICON_LIGHT = "src/icons/icon-light.svg";
+
+let currentTheme = null;
+
+function setThemeIcon(theme) {
+  if (theme === currentTheme) return;
+  currentTheme = theme;
+  const path = theme === "light" ? ICON_LIGHT : ICON_DARK;
+  chrome.action.setIcon({ path }).catch(() => {
+    // Silently ignore if the icon file doesn't exist yet
+  });
+}
+
+// Restore icon from storage on startup
+chrome.storage.local.get("vbbIconTheme", (result) => {
+  if (result.vbbIconTheme) {
+    setThemeIcon(result.vbbIconTheme);
+  } else {
+    // Default to dark icon (matches existing behaviour)
+    setThemeIcon("dark");
+  }
+});
+
 // ─── Ensure content script is loaded in a tab ─────────────────────────────
 async function ensureContentScript(tabId) {
   try {
@@ -49,6 +76,12 @@ chrome.action.onClicked.addListener(async (tab) => {
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   switch (request.action) {
+    case "themeChanged":
+      setThemeIcon(request.theme);
+      chrome.storage.local.set({ vbbIconTheme: request.theme });
+      sendResponse({ ok: true });
+      return false;
+
     case "getBookmarksBar":
       // '1' is the fixed ID for the Bookmarks Bar folder
       chrome.bookmarks.getChildren("1", (items) => {
