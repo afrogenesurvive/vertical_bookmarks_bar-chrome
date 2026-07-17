@@ -102,15 +102,5 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         }
       });
       return true; // Keep message channel open for async response
-
-    case "getBookmarkById":
-      chrome.bookmarks.get(request.bookmarkId, (items) => {
-        if (chrome.runtime.lastError) {
-          sendResponse({ error: chrome.runtime.lastError.message });
-        } else {
-          sendResponse({ item: items[0] });
-        }
-      });
-      return true;
   }
 });

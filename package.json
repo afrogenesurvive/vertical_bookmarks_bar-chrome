@@ -1,0 +1,16 @@
+{
+  "name": "vertical-bookmarks-bar",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A floating vertical bookmarks bar Chrome extension with icon-only items and folder navigation",
+  "scripts": {
+    "lint": "eslint 'vertical_bookmarks_bar/**/*.js'",
+    "format": "prettier --check 'vertical_bookmarks_bar/**/*.{js,css,json}'",
+    "format:fix": "prettier --write 'vertical_bookmarks_bar/**/*.{js,css,json}'"
+  },
+  "devDependencies": {
+    "eslint": "^9.0.0",
+    "globals": "^17.7.0",
+    "prettier": "^3.0.0"
+  }
+}
