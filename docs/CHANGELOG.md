@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.0.0-2] — 2026-07-18
+
+### Bug Fixes
+
+- **Orientation-switch drawer glitch**: Fixed drawer height and item-order reversal when switching between vertical and horizontal orientation while the drawer is open. Stale inline positioning styles from the previous orientation are now cleared before calling `positionDrawer()`, which also updates the `vbb-horizontal-drawer-right` class for correct flex-direction. The drawer stays open throughout — no manual close/reopen needed.
+
+### CSS
+
+- **Bookmark/folder icon alignment**: Added a 14px `::before` spacer to non-folder items so bookmark favicons start at the same horizontal position as folder icons (which have a 12px chevron + 2px gap before the folder icon). All items now use `justify-content: flex-start` with consistent `padding: 0 4px`.
+
 ## [1.0.0-1] — 2026-07-17
 
 ### Code Quality

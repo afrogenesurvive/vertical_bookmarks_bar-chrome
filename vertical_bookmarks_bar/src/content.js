@@ -980,6 +980,20 @@
           settings.orientation = value;
           saveSettings();
           applyOrientationClass();
+          // Clear stale inline drawer positioning from the previous orientation
+          // so CSS (horizontal height: 40px) isn't overridden by old inline values
+          drawer.style.height = "";
+          drawer.style.top = "";
+          drawer.style.bottom = "";
+          drawer.style.left = "";
+          drawer.style.right = "";
+          drawer.style.width = "";
+          drawer.style.maxWidth = "";
+          // Recompute drawer position for the new orientation (also updates
+          // vbb-horizontal-drawer-right class for correct item order)
+          if (isDrawerOpen) {
+            positionDrawer();
+          }
           closeAllSubDrawers();
           repositionSettingsPanel(container);
           renderSettings(container);

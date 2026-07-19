@@ -448,13 +448,15 @@
 .vbb-item {
   display: flex;
   align-items: center;
-  justify-content: center;
+  /* justify-content: center; */
+  justify-content: flex-start;
   width: 100%;
   height: 34px;
   position: relative;
   cursor: pointer;
   transition: background 0.1s;
   box-sizing: border-box;
+  padding: 0 4px;
 }
 
 .vbb-item:hover {
@@ -467,6 +469,12 @@
   border-radius: 2px;
   flex-shrink: 0;
   pointer-events: none;
+}
+
+.vbb-item:not(.vbb-folder)::before {
+  content: "";
+  width: 14px;
+  flex-shrink: 0;
 }
 
 /* ─── Expand/collapse chevron icon (accordion) ──────────────────── */
