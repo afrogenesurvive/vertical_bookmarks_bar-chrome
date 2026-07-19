@@ -51,7 +51,14 @@
   // Handles "Extension context invalidated" errors after extension reload
   function safeSendMessage(msg, callback) {
     try {
-      chrome.runtime.sendMessage(msg, callback);
+      const result = chrome.runtime.sendMessage(msg, callback);
+      // In MV3, sendMessage also returns a Promise that can reject
+      // asynchronously (e.g., "Extension context invalidated").
+      if (result && typeof result.catch === "function") {
+        result.catch(() => {
+          if (callback) callback(null);
+        });
+      }
     } catch {
       if (callback) callback(null);
     }

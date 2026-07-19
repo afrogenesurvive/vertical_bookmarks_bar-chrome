@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.0-3] — 2026-07-18
+
+### Bug Fixes
+
+- **Uncaught "Extension context invalidated" error**: Fixed `safeSendMessage()` to catch async Promise rejections from `chrome.runtime.sendMessage` when the extension context is invalidated. In MV3, `sendMessage` returns a Promise that rejects asynchronously — the old `try/catch` only caught synchronous throws. Added `.catch()` on the returned Promise to handle the rejection gracefully.
+
 ## [1.0.0-2] — 2026-07-18
 
 ### Bug Fixes
