@@ -8,4 +8,13 @@
 node_modules/
 
 # IDE
-.vscode/settings.json
+.vscode/
+
+# CI workflows — remove if making repo public
+.github/
+
+# Extension private key (generated when packing .crx)
+*.pem
+
+# Packed extension output
+*.crx
